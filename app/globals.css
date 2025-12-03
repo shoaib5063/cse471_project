@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap');
+
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  
+  body {
+    @apply bg-gradient-to-br from-neutral-50 to-neutral-100 text-neutral-800;
+  }
+}
+
+@layer components {
+  .gradient-crimson {
+    background: linear-gradient(135deg, #D7263D 0%, #ff4757 100%);
+  }
+  
+  .gradient-lemonade {
+    background: linear-gradient(135deg, #B8FB3C 0%, #7bed9f 100%);
+  }
+  
+  .gradient-electric {
+    background: linear-gradient(135deg, #03045E 0%, #0f3460 100%);
+  }
+  
+  .gradient-nights {
+    background: linear-gradient(135deg, #02182B 0%, #0c2461 100%);
+  }
+  
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
+  }
+  
+  .btn-primary {
+    @apply px-6 py-3 rounded-xl font-semibold text-white transition-all duration-200 hover:scale-105 active:scale-95;
+  }
+  
+  .btn-crimson {
+    @apply btn-primary gradient-crimson hover:shadow-lg hover:shadow-crimson/25;
+  }
+  
+  .btn-lemonade {
+    @apply btn-primary gradient-lemonade text-electric hover:shadow-lg hover:shadow-lemonade/25;
+  }
+  
+  .btn-electric {
+    @apply btn-primary gradient-electric hover:shadow-lg hover:shadow-electric/25;
+  }
+}
