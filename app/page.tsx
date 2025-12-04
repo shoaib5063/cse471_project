@@ -9,7 +9,7 @@ import { AnimatedBanners } from '../components/home/AnimatedBanners'
 export default function HomePage() {
   return (
     <div className="min-h-screen">
-      <Header isAuthenticated={false} />
+      <Header />
       <main>
         <HeroBanner />
         <AnimatedBanners />

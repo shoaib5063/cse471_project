@@ -2,9 +2,12 @@
 
 import React from 'react'
 import { motion } from 'framer-motion'
-import { Utensils, Heart, Target, TrendingUp, Apple, Droplets } from 'lucide-react'
+import { Utensils, Heart, Target, TrendingUp, Apple, Droplets, Activity } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 export const AnimatedBanners: React.FC = () => {
+  const router = useRouter()
+  
   const horizontalBanners = [
     {
       icon: Utensils,
@@ -31,25 +34,36 @@ export const AnimatedBanners: React.FC = () => {
   
   const verticalBanners = [
     {
+      icon: Activity,
+      title: "Health Metrics",
+      description: "BMI and daily calorie goals calculated based on your data",
+      gradient: "gradient-electric",
+      textColor: "text-white",
+      link: "/health-metrics"
+    },
+    {
       icon: TrendingUp,
       title: "Progress Analytics",
       description: "Visualize your nutrition trends and improvements",
       gradient: "gradient-nights",
-      textColor: "text-white"
+      textColor: "text-white",
+      link: null
     },
     {
       icon: Apple,
       title: "Recipe Discovery",
       description: "Explore healthy recipes matched to your preferences",
       gradient: "gradient-lemonade",
-      textColor: "text-electric"
+      textColor: "text-electric",
+      link: null
     },
     {
       icon: Droplets,
       title: "Hydration Tracking",
       description: "Stay hydrated with smart reminders and goals",
       gradient: "gradient-crimson",
-      textColor: "text-white"
+      textColor: "text-white",
+      link: null
     }
   ]
   
@@ -110,11 +124,11 @@ export const AnimatedBanners: React.FC = () => {
         </div>
         
         {/* Vertical Sliding Banners */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-96">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 h-96">
           {verticalBanners.map((banner, index) => (
             <div key={index} className="overflow-hidden rounded-2xl">
               <motion.div
-                className={`h-full ${banner.gradient} p-6 flex flex-col justify-between`}
+                className={`h-full ${banner.gradient} p-6 flex flex-col justify-between ${banner.link ? 'cursor-pointer' : ''}`}
                 animate={{ y: [0, -20, 0] }}
                 transition={{ 
                   duration: 4 + index, 
@@ -123,6 +137,7 @@ export const AnimatedBanners: React.FC = () => {
                   delay: index * 0.5
                 }}
                 whileHover={{ scale: 1.02 }}
+                onClick={() => banner.link && router.push(banner.link)}
               >
                 <div className="space-y-4">
                   <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
@@ -135,6 +150,11 @@ export const AnimatedBanners: React.FC = () => {
                 <p className={`${banner.textColor} opacity-90 leading-relaxed`}>
                   {banner.description}
                 </p>
+                {banner.link && (
+                  <div className={`${banner.textColor} text-sm font-semibold flex items-center`}>
+                    View Details →
+                  </div>
+                )}
               </motion.div>
             </div>
           ))}

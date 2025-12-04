@@ -2,8 +2,11 @@
 
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Menu, X, User, Bell, Settings } from 'lucide-react'
+import { Menu, X, User, Bell, Settings, LogOut } from 'lucide-react'
 import { Button } from '../ui/Button'
+import { useAuth } from '../../contexts/AuthContext'
+import { logoutUser } from '../../lib/firebase/auth'
+import { useRouter } from 'next/navigation'
 
 interface HeaderProps {
   isAuthenticated?: boolean
@@ -11,10 +14,20 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({
-  isAuthenticated = false,
-  userName = 'User'
+  isAuthenticated: propIsAuthenticated,
+  userName: propUserName
 }) => {
+  const { user, userProfile } = useAuth()
+  const router = useRouter()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  
+  const isAuthenticated = propIsAuthenticated ?? !!user
+  const userName = propUserName ?? userProfile?.email?.split('@')[0] ?? 'User'
+  
+  const handleLogout = async () => {
+    await logoutUser()
+    router.push('/')
+  }
   
   const navItems = [
     { label: 'Dashboard', href: '/dashboard' },
@@ -71,6 +84,7 @@ export const Header: React.FC<HeaderProps> = ({
                 
                 {/* Settings */}
                 <motion.button
+                  onClick={() => router.push('/profile')}
                   className="p-2 text-neutral-600 hover:text-electric transition-colors duration-200"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
@@ -87,13 +101,24 @@ export const Header: React.FC<HeaderProps> = ({
                     {userName}
                   </span>
                 </div>
+                
+                {/* Logout */}
+                <motion.button
+                  onClick={handleLogout}
+                  className="p-2 text-neutral-600 hover:text-red-600 transition-colors duration-200"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  title="Logout"
+                >
+                  <LogOut size={20} />
+                </motion.button>
               </>
             ) : (
               <div className="flex items-center space-x-3">
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={() => router.push('/auth')}>
                   Login
                 </Button>
-                <Button variant="crimson" size="sm">
+                <Button variant="crimson" size="sm" onClick={() => router.push('/auth')}>
                   Sign Up
                 </Button>
               </div>
