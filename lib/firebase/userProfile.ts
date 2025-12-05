@@ -29,10 +29,25 @@ export const updateUserProfile = async (
   updates: Partial<UserProfile>
 ) => {
   const userRef = doc(db, 'users', uid);
-  await updateDoc(userRef, {
-    ...updates,
-    updatedAt: new Date(),
-  });
+  
+  // Check if document exists
+  const userSnap = await getDoc(userRef);
+  
+  if (userSnap.exists()) {
+    // Document exists, update it
+    await updateDoc(userRef, {
+      ...updates,
+      updatedAt: new Date(),
+    });
+  } else {
+    // Document doesn't exist, create it with setDoc
+    await setDoc(userRef, {
+      uid,
+      ...updates,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+  }
 };
 
 export const calculateBMI = (weight: number, height: number): BMIData => {

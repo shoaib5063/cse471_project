@@ -16,6 +16,7 @@ export const ProfileForm: React.FC = () => {
   const [healthGoals, setHealthGoals] = useState<string[]>(userProfile?.healthGoals || []);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState('');
   const [bmiData, setBmiData] = useState<BMIData | null>(null);
 
   useEffect(() => {
@@ -48,12 +49,19 @@ export const ProfileForm: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user) {
+      setError('You must be logged in to update profile');
+      return;
+    }
 
     setLoading(true);
     setSuccess(false);
+    setError('');
 
     try {
+      console.log('Updating profile for user:', user.uid);
+      console.log('Update data:', { age, gender, weight, height, activityLevel, dietaryPreferences, healthGoals });
+      
       await updateUserProfile(user.uid, {
         age,
         gender: gender as 'male' | 'female' | 'other',
@@ -64,11 +72,14 @@ export const ProfileForm: React.FC = () => {
         healthGoals,
       });
       
+      console.log('Profile updated successfully, refreshing...');
       await refreshProfile();
+      
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to update profile:', error);
+      setError(error.message || 'Failed to update profile. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -87,12 +98,25 @@ export const ProfileForm: React.FC = () => {
       <h2 className="text-2xl font-bold mb-6">Update Your Profile</h2>
       
       {bmiData && (
-        <div className="mb-6 p-4 bg-green-50 rounded-lg">
-          <h3 className="font-semibold text-lg mb-2">Your Health Metrics</h3>
-          <p className="text-gray-700">BMI: {bmiData.bmi} ({bmiData.category})</p>
-          {bmiData.dailyCalories > 0 && (
-            <p className="text-gray-700">Daily Calorie Goal: {bmiData.dailyCalories} kcal</p>
-          )}
+        <div className="mb-6 p-6 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl shadow-lg">
+          <h3 className="font-bold text-xl mb-3 text-white flex items-center">
+            <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Your Health Metrics
+          </h3>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between bg-white bg-opacity-20 backdrop-blur-sm rounded-lg p-3">
+              <span className="text-green-50 font-medium">BMI:</span>
+              <span className="text-white font-bold text-lg">{bmiData.bmi} ({bmiData.category})</span>
+            </div>
+            {bmiData.dailyCalories > 0 && (
+              <div className="flex items-center justify-between bg-white bg-opacity-20 backdrop-blur-sm rounded-lg p-3">
+                <span className="text-green-50 font-medium">Daily Calorie Goal:</span>
+                <span className="text-white font-bold text-lg">{bmiData.dailyCalories} kcal</span>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
@@ -217,7 +241,15 @@ export const ProfileForm: React.FC = () => {
         </div>
 
         {success && (
-          <div className="text-green-600 text-sm">Profile updated successfully!</div>
+          <div className="p-3 bg-green-50 border border-green-200 rounded-md text-green-800 text-sm">
+            ✅ Profile updated successfully!
+          </div>
+        )}
+
+        {error && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded-md text-red-800 text-sm">
+            ❌ {error}
+          </div>
         )}
 
         <button
