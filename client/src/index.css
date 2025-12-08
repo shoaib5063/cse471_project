@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply font-sans antialiased;
+  }
+}
+
+@layer utilities {
+  .gradient-crimson {
+    @apply bg-gradient-to-r from-red-500 to-pink-500;
+  }
+  
+  .gradient-lemonade {
+    @apply bg-gradient-to-r from-yellow-400 to-orange-400;
+  }
+  
+  .gradient-electric {
+    @apply bg-gradient-to-r from-blue-500 to-indigo-600;
+  }
+  
+  .gradient-nights {
+    @apply bg-gradient-to-r from-slate-800 to-slate-900;
+  }
+}

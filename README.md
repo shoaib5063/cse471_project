@@ -1,141 +1,154 @@
-# MindfulMeals - Healthy Eating Assistant 🌱
+# MindfulMeals - React + Express Application
 
-**Track your meals, nourish your body, and discover mindful eating.**
+A comprehensive meal tracking and health monitoring platform built with React and Express.
 
-MindfulMeals is an intelligent web-based health and nutrition tracking system designed to help users monitor, plan, and improve their eating habits through mindful awareness and personalized insights.
+## 🚀 Running Servers
 
-## 🎨 Design System
+Both servers are currently running:
 
-This project uses a vibrant color palette inspired by health and wellness:
-
-### Primary Colors
-- **Crimson** (#D7263D) - Energy, motivation, alerts
-- **Lemonade** (#B8FB3C) - Growth, success, positive actions  
-- **Electric** (#03045E) - Trust, stability, primary text
-- **Nights** (#02182B) - Depth, premium features, dark themes
-
-### Color Usage
-- **Crimson**: Call-to-action buttons, warnings, energy indicators
-- **Lemonade**: Success states, progress bars, achievements
-- **Electric**: Primary text, navigation, professional elements
-- **Nights**: Dark backgrounds, premium features, depth
-
-## 🚀 Features Implemented
-
-### Core UI Components
-- **Button**: Multi-variant button system with hover animations
-- **Card**: Flexible card component with gradient options
-- **Input**: Form inputs with validation states
-- **ProgressBar**: Animated progress indicators
-- **Badge**: Status and category indicators
-
-### Layout Components
-- **Header**: Responsive navigation with authentication states
-- **Footer**: Comprehensive site footer with links and branding
-
-### Homepage Components
-- **HeroBanner**: Animated hero section with floating elements
-- **AnimatedBanners**: Sliding promotional banners (horizontal & vertical)
-
-### Dashboard Components
-- **CalorieTracker**: Comprehensive calorie and macro tracking with charts
-- **MoodTracker**: Emotional eating awareness and logging
-
-### Meal Logging
-- **MealLogger**: Photo upload and manual entry system
-
-## 🛠 Technology Stack
-
-- **Frontend**: Next.js 14, React 18, TypeScript
-- **Styling**: Tailwind CSS with custom design system
-- **Animations**: Framer Motion for smooth interactions
-- **Charts**: Recharts for data visualization
-- **Icons**: Lucide React for consistent iconography
-
-## 📱 Responsive Design
-
-All components are built mobile-first with responsive breakpoints:
-- Mobile: 320px+
-- Tablet: 768px+
-- Desktop: 1024px+
-- Large: 1280px+
-
-## 🎯 Key Design Principles
-
-1. **Mindful Interactions**: Smooth animations that don't overwhelm
-2. **Accessibility First**: High contrast ratios and keyboard navigation
-3. **Visual Hierarchy**: Clear typography and spacing systems
-4. **Emotional Design**: Colors and animations that motivate healthy choices
-
-## 🚀 Getting Started
-
-```bash
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
-
-# Build for production
-npm run build
-```
+- **Client (React)**: http://localhost:3000
+- **Server (Express)**: http://localhost:5000
 
 ## 📁 Project Structure
 
 ```
-mindful-meals/
-├── app/                    # Next.js app directory
-│   ├── dashboard/         # Dashboard pages
-│   ├── meals/            # Meal logging pages
-│   └── globals.css       # Global styles
-├── components/
-│   ├── ui/               # Reusable UI components
-│   ├── layout/           # Layout components
-│   ├── home/             # Homepage components
-│   ├── dashboard/        # Dashboard-specific components
-│   └── meals/            # Meal-related components
-└── public/               # Static assets
+├── client/                 # React frontend
+│   ├── src/
+│   │   ├── components/    # Reusable components
+│   │   │   ├── auth/      # Login & Register forms
+│   │   │   ├── home/      # Hero & Animated banners
+│   │   │   └── layout/    # Header & Footer
+│   │   ├── contexts/      # AuthContext for user state
+│   │   ├── lib/           # Firebase configuration
+│   │   │   └── firebase/  # Auth & user profile functions
+│   │   ├── pages/         # Page components
+│   │   │   ├── HomePage.jsx
+│   │   │   ├── AuthPage.jsx
+│   │   │   ├── DashboardPage.jsx
+│   │   │   ├── ProfilePage.jsx
+│   │   │   ├── HealthMetricsPage.jsx
+│   │   │   └── AdminPage.jsx
+│   │   ├── App.jsx        # Main app with routing
+│   │   └── main.jsx       # Entry point
+│   └── .env               # Environment variables
+│
+└── server/                # Express backend
+    ├── src/
+    │   ├── config/        # MongoDB configuration
+    │   ├── routes/        # API routes
+    │   │   ├── auth.js
+    │   │   ├── users.js
+    │   │   ├── meals.js
+    │   │   └── admin.js
+    │   └── server.js      # Express server
+    └── .env               # Environment variables
 ```
 
-## 🎨 Component Examples
+## ✨ Features Implemented
 
-### Button Usage
-```tsx
-<Button variant="crimson" size="lg">
-  Start Journey
-</Button>
+### Frontend (React)
+- ✅ Authentication (Login/Register with Firebase)
+- ✅ Protected routes with AuthContext
+- ✅ Dashboard with meal tracking
+- ✅ Profile management
+- ✅ Health metrics visualization with charts
+- ✅ Admin panel for user management
+- ✅ Responsive design with Tailwind CSS
+- ✅ Smooth animations with Framer Motion
+- ✅ Icons with Lucide React
+
+### Backend (Express)
+- ✅ RESTful API structure
+- ✅ CORS enabled
+- ✅ MongoDB configuration ready
+- ✅ API routes for:
+  - Authentication
+  - User management
+  - Meal tracking
+  - Admin operations
+
+## 🔧 Technologies Used
+
+### Client
+- React 18
+- React Router DOM
+- Firebase (Auth & Firestore)
+- Axios
+- Tailwind CSS
+- Framer Motion
+- Recharts
+- Lucide React
+- Vite
+
+### Server
+- Express
+- MongoDB/Mongoose
+- Firebase Admin
+- CORS
+- Dotenv
+- Nodemon
+
+## 📝 Available Pages
+
+1. **Home** (`/`) - Landing page with hero banner and features
+2. **Auth** (`/auth`) - Login and registration
+3. **Dashboard** (`/dashboard`) - Meal tracking and daily stats
+4. **Profile** (`/profile`) - User profile management
+5. **Health Metrics** (`/health-metrics`) - Health tracking with charts
+6. **Admin** (`/admin`) - Admin dashboard (admin role only)
+
+## 🔐 Environment Variables
+
+### Client (.env)
+- Firebase configuration
+- API URL (http://localhost:5000)
+
+### Server (.env)
+- PORT (5000)
+- MongoDB connection string
+
+## 🎯 Next Steps
+
+To complete the application:
+
+1. **Database Models**: Create Mongoose schemas for Users, Meals, and HealthMetrics
+2. **API Implementation**: Replace TODO comments in routes with actual database operations
+3. **Firebase Admin**: Set up Firebase Admin SDK for token verification
+4. **Authentication Middleware**: Add middleware to protect API routes
+5. **Error Handling**: Enhance error handling and validation
+6. **Testing**: Add unit and integration tests
+
+## 🛠️ Development Commands
+
+### Client
+```bash
+cd client
+npm run dev      # Start development server
+npm run build    # Build for production
+npm run preview  # Preview production build
 ```
 
-### Card with Gradient
-```tsx
-<Card gradient="lemonade" hover>
-  <h3>Nutrition Tip</h3>
-  <p>Stay hydrated throughout the day!</p>
-</Card>
+### Server
+```bash
+cd server
+npm run dev      # Start with nodemon
+npm start        # Start production server
 ```
 
-### Progress Tracking
-```tsx
-<ProgressBar 
-  progress={75} 
-  color="lemonade" 
-  label="Daily Goal" 
-/>
+## 📦 Installation
+
+If you need to reinstall dependencies:
+
+```bash
+# Client
+cd client
+npm install
+
+# Server
+cd server
+npm install
 ```
-
-## 🌟 Future Enhancements
-
-- AI-powered food recognition
-- Wearable device integration
-- Community features
-- Nutritionist consultation system
-- Recipe recommendations
-- Shopping list generation
-
-## 📄 License
-
-This project is built for educational and demonstration purposes.
 
 ---
 
-**Made with ❤️ for healthier living**
+Built with ❤️ for healthy living!
