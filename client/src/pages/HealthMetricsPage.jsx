@@ -4,7 +4,16 @@ import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Activity, Heart, TrendingUp, Scale } from 'lucide-react';
+import {
+  Activity,
+  Heart,
+  TrendingUp,
+  Scale,
+  ClipboardList,
+  ListChecks,
+  ChefHat,
+  Lightbulb,
+} from 'lucide-react';
 
 export default function HealthMetricsPage() {
   const { user, userProfile, loading } = useAuth();
@@ -24,6 +33,40 @@ export default function HealthMetricsPage() {
     { date: '2024-05', weight: 71 },
     { date: '2024-06', weight: 70 },
   ]);
+  const [activeSection, setActiveSection] = useState('health-metrics');
+
+  const sections = [
+    {
+      id: 'health-metrics',
+      label: 'Health Metrics',
+      description: 'Weight, BMI, goals, and activity',
+      icon: Activity,
+    },
+    {
+      id: 'meal-tracking',
+      label: 'Meal Tracking',
+      description: 'Log meals and monitor macros',
+      icon: ClipboardList,
+    },
+    {
+      id: 'meal-plans',
+      label: 'Meal Plans',
+      description: 'Daily or weekly nutrition plans',
+      icon: ListChecks,
+    },
+    {
+      id: 'recipe-lab',
+      label: 'Recipe Lab',
+      description: 'Ideas tailored to your pantry',
+      icon: ChefHat,
+    },
+    {
+      id: 'health-tips',
+      label: 'Health Tips',
+      description: 'Quick reminders and guidance',
+      icon: Lightbulb,
+    },
+  ];
 
   useEffect(() => {
     if (!loading && !user) {
