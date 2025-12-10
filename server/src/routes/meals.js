@@ -1,48 +1,34 @@
 const express = require('express');
 const router = express.Router();
+const {
+  searchFood,
+  getFoodDetails,
+  logMeal,
+  getUserMeals,
+  getDailySummary,
+  deleteMeal,
+  updateMeal
+} = require('../controllers/mealController');
 
-// Example: Get all meals for a user
-router.get('/', async (req, res) => {
-  try {
-    const { userId } = req.query;
-    
-    if (!userId) {
-      return res.status(400).json({ error: 'User ID is required' });
-    }
-    
-    // TODO: Fetch meals from MongoDB
-    // const meals = await Meal.find({ userId }).sort({ date: -1 });
-    
-    res.json({
-      success: true,
-      data: [],
-      message: 'Meals fetched successfully'
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+// USDA Food Search - NEW feature for your meal logging
+router.get('/search', searchFood);
 
-// Example: Create a new meal
-router.post('/', async (req, res) => {
-  try {
-    const { userId, mealName, mealType, calories } = req.body;
-    
-    if (!userId || !mealName || !mealType || !calories) {
-      return res.status(400).json({ error: 'Missing required fields' });
-    }
-    
-    // TODO: Create meal in MongoDB
-    // const meal = await Meal.create(req.body);
-    
-    res.status(201).json({
-      success: true,
-      data: req.body,
-      message: 'Meal created successfully'
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+// Get detailed food nutrition - NEW feature
+router.get('/food/:fdcId', getFoodDetails);
+
+// Get all meals for a user (COMPLETING the TODO your teammate left)
+router.get('/user/:userId', getUserMeals);
+
+// Create a new meal (COMPLETING the TODO your teammate left)
+router.post('/log', logMeal);
+
+// Get daily summary - NEW feature
+router.get('/summary/:userId', getDailySummary);
+
+// Update a meal - NEW feature
+router.put('/:mealId', updateMeal);
+
+// Delete a meal - NEW feature
+router.delete('/:mealId', deleteMeal);
 
 module.exports = router;
