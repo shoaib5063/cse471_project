@@ -17,10 +17,15 @@ router.get('/search', searchFood);
 router.get('/food/:fdcId', getFoodDetails);
 
 // Get all meals for a user (COMPLETING the TODO your teammate left)
+// Get all meals for a user (COMPLETING the TODO your teammate left)
 router.get('/user/:userId', getUserMeals);
+// Also support GET /?userId=... for client compatibility
+router.get('/', getUserMeals);
 
 // Create a new meal (COMPLETING the TODO your teammate left)
+// Create a new meal (support both /log and root POST for client compatibility)
 router.post('/log', logMeal);
+router.post('/', logMeal);
 
 // Get daily summary - NEW feature
 router.get('/summary/:userId', getDailySummary);

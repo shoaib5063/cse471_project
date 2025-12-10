@@ -117,8 +117,13 @@ const logMeal = async (req, res) => {
 // Get meals for a user
 const getUserMeals = async (req, res) => {
   try {
-    const { userId } = req.params;
+    // Accept userId either as a URL param or a query param for flexibility
+    const userId = req.params.userId || req.query.userId;
     const { date, startDate, endDate } = req.query;
+
+    if (!userId) {
+      return res.status(400).json({ error: 'Missing userId' });
+    }
 
     let query = { userId };
 

@@ -31,7 +31,9 @@ export default function MealTrackingPage() {
   const fetchMeals = async () => {
     try {
       const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/meals?userId=${user.uid}`);
-      setMeals(response.data.data || []);
+      // Server returns an array of meals directly (res.json(meals)),
+      // so read `response.data` not `response.data.data`.
+      setMeals(response.data || []);
     } catch (error) {
       console.error('Error fetching meals:', error);
     }
