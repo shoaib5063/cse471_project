@@ -113,4 +113,75 @@ const sendMealReminderEmail = async (userEmail, mealType, mealName) => {
   }
 };
 
-module.exports = { sendMealReminderEmail };
+/**
+ * Send question reply email via Brevo (Sendinblue)
+ * @param {string} userEmail
+ * @param {string} question
+ * @param {string} answer
+ */
+const sendQuestionReplyEmail = async (userEmail, question, answer) => {
+  try {
+    const sender = {
+      name: process.env.BREVO_FROM_NAME || 'MindfulMeals',
+      email: process.env.BREVO_FROM_EMAIL || 'noreply@mindfulmeals.com',
+    };
+
+    const to = [{ email: userEmail }];
+
+    const htmlContent = `<!DOCTYPE html>
+    <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9fafb; border-radius: 8px; }
+          .header { text-align: center; margin-bottom: 20px; }
+          .header h1 { color: #16a34a; margin: 0; }
+          .content { background-color: #fff; padding: 20px; border-radius: 6px; margin-bottom: 20px; }
+          .question-box { background-color: #f3f4f6; padding: 15px; border-radius: 4px; margin-bottom: 20px; border-left: 4px solid #6b7280; }
+          .answer-box { background-color: #ecfdf5; padding: 15px; border-radius: 4px; border-left: 4px solid #16a34a; }
+          .footer { text-align: center; font-size: 12px; color: #666; margin-top: 20px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Expert Reply</h1>
+          </div>
+          <div class="content">
+            <p>Hello,</p>
+            <p>Our nutrition expert has answered your question!</p>
+            
+            <h3>Your Question:</h3>
+            <div class="question-box">
+              ${question}
+            </div>
+
+            <h3>Expert Answer:</h3>
+            <div class="answer-box">
+              ${answer}
+            </div>
+          </div>
+          <div class="footer">
+            <p>MindfulMeals - Nourish Body & Mind</p>
+          </div>
+        </div>
+      </body>
+    </html>`;
+
+    const sendSmtpEmail = {
+      sender,
+      to,
+      subject: `✅ Answer to your health question`,
+      htmlContent,
+    };
+
+    const response = await transactionalApi.sendTransacEmail(sendSmtpEmail);
+    console.log(`✅ Question reply email sent to ${userEmail}`);
+    return response;
+  } catch (error) {
+    console.error('❌ Error sending question reply email:');
+    throw error;
+  }
+};
+
+module.exports = { sendMealReminderEmail, sendQuestionReplyEmail };

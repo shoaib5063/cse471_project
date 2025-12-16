@@ -5,6 +5,7 @@ import { updateUserProfile } from '../lib/firebase/userProfile';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { User, Mail, Calendar, Users } from 'lucide-react';
+import MealReminderManager from '../components/reminders/MealReminderManager';
 
 export default function ProfilePage() {
   const { user, userProfile, loading, refreshProfile } = useAuth();
@@ -54,7 +55,7 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      
+
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-lg shadow">
           <div className="px-6 py-4 border-b border-gray-200">
@@ -218,9 +219,21 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
-      </main>
+
+        <div className="bg-white rounded-lg shadow mt-8">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h2 className="text-xl font-bold text-gray-900">Meal Reminders</h2>
+            <p className="text-sm text-gray-500 mt-1">
+              Set daily reminders for your meals. notifications will be sent to {user?.email}
+            </p>
+          </div>
+          <div className="p-6">
+            <MealReminderManager userId={user.uid} userEmail={user.email} />
+          </div>
+        </div>
+      </main >
 
       <Footer />
-    </div>
+    </div >
   );
 }

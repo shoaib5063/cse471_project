@@ -1,5 +1,6 @@
 const axios = require('axios');
 const Meal = require('../models/Meal');
+const Hydration = require('../models/Hydration');
 
 // Search food using USDA API
 const searchFood = async (req, res) => {
@@ -40,7 +41,7 @@ const searchFood = async (req, res) => {
     res.json(foods);
   } catch (error) {
     console.error('USDA API Error:', error.response?.data || error.message);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to search food',
       details: error.response?.data || error.message
     });
@@ -81,7 +82,7 @@ const getFoodDetails = async (req, res) => {
     });
   } catch (error) {
     console.error('USDA API Error:', error.response?.data || error.message);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to get food details',
       details: error.message
     });
@@ -131,7 +132,7 @@ const getUserMeals = async (req, res) => {
       const targetDate = new Date(date);
       const nextDay = new Date(targetDate);
       nextDay.setDate(nextDay.getDate() + 1);
-      
+
       query.date = {
         $gte: targetDate,
         $lt: nextDay
@@ -152,22 +153,51 @@ const getUserMeals = async (req, res) => {
 };
 
 // Get daily summary
+// Get daily summary
 const getDailySummary = async (req, res) => {
   try {
     const { userId } = req.params;
     const { date } = req.query;
 
     const targetDate = date ? new Date(date) : new Date();
-    const nextDay = new Date(targetDate);
-    nextDay.setDate(nextDay.getDate() + 1);
+    // Set to start of day in the server's timezone (or UTC if assumed)
+    // If date string is '2025-12-15', new Date() gives UTC midnight.
+    // If date is undefined, we want today.
 
-    const meals = await Meal.find({
-      userId,
-      date: {
-        $gte: targetDate,
-        $lt: nextDay
-      }
-    });
+    // Create start and end using string manipulation for consistency if date is string
+    let startOfDay, endOfDay;
+
+    if (date) {
+      startOfDay = new Date(date);
+      startOfDay.setHours(0, 0, 0, 0);
+
+      endOfDay = new Date(date);
+      endOfDay.setHours(23, 59, 59, 999);
+    } else {
+      const now = new Date();
+      startOfDay = new Date(now);
+      startOfDay.setHours(0, 0, 0, 0);
+
+      endOfDay = new Date(now);
+      endOfDay.setHours(23, 59, 59, 999);
+    }
+
+    const [meals, hydrationLogs] = await Promise.all([
+      Meal.find({
+        userId,
+        date: {
+          $gte: startOfDay,
+          $lte: endOfDay
+        }
+      }),
+      Hydration.find({
+        userId,
+        date: {
+          $gte: startOfDay,
+          $lte: endOfDay
+        }
+      })
+    ]);
 
     const summary = meals.reduce((acc, meal) => {
       acc.calories += meal.nutrition.calories || 0;
@@ -187,6 +217,9 @@ const getDailySummary = async (req, res) => {
       sugar: 0,
       mealCount: 0
     });
+
+    const totalHydration = hydrationLogs.reduce((sum, log) => sum + log.amount, 0);
+    summary.hydration = totalHydration; // in ml
 
     res.json(summary);
   } catch (error) {
@@ -214,7 +247,7 @@ const updateMeal = async (req, res) => {
     const updates = req.body;
 
     const meal = await Meal.findByIdAndUpdate(mealId, updates, { new: true });
-    
+
     if (!meal) {
       return res.status(404).json({ error: 'Meal not found' });
     }

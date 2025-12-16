@@ -11,6 +11,7 @@ import {
   ClipboardList,
   ChefHat,
   Lightbulb,
+  MessageSquare
 } from 'lucide-react';
 import axios from 'axios';
 
@@ -18,13 +19,14 @@ export default function DashboardPage() {
   const { user, userProfile, loading } = useAuth();
   const navigate = useNavigate();
   const [meals, setMeals] = useState([]);
-  
+
   const sections = [
     { id: 'overview', label: 'Overview', icon: LayoutGrid },
     { id: 'meal-tracking', label: 'Meal Tracking', icon: ClipboardList, to: '/dashboard/meal-tracking' },
     { id: 'meal-plans', label: 'Meal Plans', icon: Utensils, to: '/dashboard/meal-plans' },
     { id: 'recipe-lab', label: 'Recipe Lab', icon: ChefHat, to: '/dashboard/recipe-lab' },
     { id: 'health-tips', label: 'Health Tips', icon: Lightbulb, to: '/dashboard/health-tips' },
+    { id: 'questions', label: 'Health Q&A', icon: MessageSquare, to: '/dashboard/questions' },
   ];
 
   useEffect(() => {
@@ -33,9 +35,18 @@ export default function DashboardPage() {
     }
   }, [user, loading, navigate]);
 
+  const [summary, setSummary] = useState({
+    calories: 0,
+    protein: 0,
+    carbs: 0,
+    fat: 0,
+    hydration: 0
+  });
+
   useEffect(() => {
     if (user) {
       fetchMeals();
+      fetchSummary();
     }
   }, [user]);
 
@@ -48,8 +59,31 @@ export default function DashboardPage() {
       setMeals(response.data || []);
     } catch (error) {
       console.error('Error fetching meals:', error);
-      // Fallback to empty array if API fails
       setMeals([]);
+    }
+  };
+
+  const fetchSummary = async () => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/meals/summary/${user.uid}?date=${today}`
+      );
+      setSummary(response.data);
+    } catch (error) {
+      console.error('Error fetching summary:', error);
+    }
+  };
+
+  const logWater = async (amount) => {
+    try {
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/hydration`, {
+        userId: user.uid,
+        amount
+      });
+      fetchSummary(); // Refresh summary
+    } catch (error) {
+      console.error('Error logging water:', error);
     }
   };
   if (loading) {
@@ -97,6 +131,76 @@ export default function DashboardPage() {
                     <p className="text-xl font-semibold text-gray-900">
                       {meals.reduce((sum, meal) => sum + (meal.nutrition?.calories || parseInt(meal.calories) || 0), 0)}
                     </p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Daily Progress Section */}
+            <section className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Daily Progress</h2>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Calories */}
+                <div className="bg-orange-50 rounded-lg p-4 border border-orange-100">
+                  <h3 className="text-lg font-semibold text-orange-800 mb-2">Calories</h3>
+                  <div className="flex items-end gap-2">
+                    <span className="text-3xl font-bold text-orange-600">
+                      {summary.calories}
+                    </span>
+                    <span className="text-sm text-orange-600 mb-1">kcal</span>
+                  </div>
+                  <div className="w-full bg-orange-200 h-2 rounded-full mt-2">
+                    <div
+                      className="bg-orange-500 h-2 rounded-full"
+                      style={{ width: `${Math.min((summary.calories / 2000) * 100, 100)}%` }}
+                    ></div>
+                  </div>
+                </div>
+
+                {/* Hydration */}
+                <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
+                  <div className="flex justify-between items-start">
+                    <h3 className="text-lg font-semibold text-blue-800 mb-2">Hydration</h3>
+                    {/* Simple Add Water Button */}
+                    <button
+                      onClick={() => logWater(250)}
+                      className="text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 px-2 py-1 rounded transition"
+                    >
+                      + 250ml
+                    </button>
+                  </div>
+                  <div className="flex items-end gap-2">
+                    <span className="text-3xl font-bold text-blue-600">
+                      {(summary.hydration / 1000).toFixed(1)}
+                    </span>
+                    <span className="text-sm text-blue-600 mb-1">L</span>
+                  </div>
+                  <div className="w-full bg-blue-200 h-2 rounded-full mt-2">
+                    <div
+                      className="bg-blue-500 h-2 rounded-full"
+                      style={{ width: `${Math.min((summary.hydration / 2000) * 100, 100)}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-xs text-blue-500 mt-2 text-right">{summary.hydration} / 2000 ml</p>
+                </div>
+
+                {/* Macros */}
+                <div className="bg-green-50 rounded-lg p-4 border border-green-100">
+                  <h3 className="text-lg font-semibold text-green-800 mb-2">Nutrition</h3>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-green-700">Protein</span>
+                      <span className="font-bold text-green-900">{summary.protein}g</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-green-700">Carbs</span>
+                      <span className="font-bold text-green-900">{summary.carbs}g</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-green-700">Fat</span>
+                      <span className="font-bold text-green-900">{summary.fat}g</span>
+                    </div>
                   </div>
                 </div>
               </div>

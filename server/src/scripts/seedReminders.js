@@ -23,7 +23,7 @@ const seedReminders = async () => {
         console.log(`Seeding reminders for ${usersToSeed.length} users...`);
 
         const defaultReminders = [
-            { mealType: 'breakfast', reminderTime: '08:00', mealName: 'Healthy Breakfast' },
+            { mealType: 'breakfast', reminderTime: '08:58', mealName: 'Healthy Breakfast' },
             { mealType: 'lunch', reminderTime: '13:00', mealName: 'Power Lunch' },
             { mealType: 'snack', reminderTime: '16:00', mealName: 'Afternoon Snack' },
             { mealType: 'dinner', reminderTime: '20:00', mealName: 'Light Dinner' }

@@ -12,6 +12,8 @@ import HealthTipsPage from './pages/HealthTipsPage';
 import ProfilePage from './pages/ProfilePage';
 import HealthMetricsPage from './pages/HealthMetricsPage';
 import AdminPage from './pages/AdminPage';
+import HealthQuestionsPage from './pages/HealthQuestionsPage';
+import AdminQuestionsPage from './pages/AdminQuestionsPage';
 
 function App() {
   return (
@@ -25,9 +27,11 @@ function App() {
           <Route path="/dashboard/meal-plans" element={<MealPlansPage />} />
           <Route path="/dashboard/recipe-lab" element={<RecipeLabPage />} />
           <Route path="/dashboard/health-tips" element={<HealthTipsPage />} />
+          <Route path="/dashboard/questions" element={<HealthQuestionsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/health-metrics" element={<HealthMetricsPage />} />
           <Route path="/admin" element={<AdminPage />} />
+          <Route path="/admin/questions" element={<AdminQuestionsPage />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>

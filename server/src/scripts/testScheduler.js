@@ -23,7 +23,7 @@ const testScheduler = async () => {
             // Update breakfast reminder to match current time
             const result = await MealReminder.findOneAndUpdate(
                 { userId: userId, mealType: 'breakfast' },
-                { reminderTime: currentTime, isActive: true },
+                { reminderTime: currentTime, isActive: true, lastSentAt: null },
                 { new: true }
             );
 
