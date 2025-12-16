@@ -44,6 +44,18 @@ export default function Header() {
                 >
                   Health
                 </Link>
+                <Link
+                  to="/mood-patterns"
+                  className="text-gray-700 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium"
+                >
+                  Mood Patterns
+                </Link>
+                <Link
+                  to="/health-form"
+                  className="text-gray-700 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium"
+                >
+                  Health Form
+                </Link>
                 {userProfile?.role === 'admin' && (
                   <Link
                     to="/admin"
