@@ -14,6 +14,7 @@ import {
   MessageSquare
 } from 'lucide-react';
 import axios from 'axios';
+import MealReminderManager from '../components/reminders/MealReminderManager';
 
 export default function DashboardPage() {
   const { user, userProfile, loading } = useAuth();
@@ -204,6 +205,15 @@ export default function DashboardPage() {
                   </div>
                 </div>
               </div>
+            </section>
+
+            {/* Meal Reminders Section */}
+            <section className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Meal Reminders</h2>
+              <p className="text-sm text-gray-500 mb-4">
+                Set daily reminders for your meals. notifications will be sent to {user?.email}
+              </p>
+              <MealReminderManager userId={user.uid} userEmail={user.email} />
             </section>
 
             <section className="grid grid-cols-1 md:grid-cols-2 gap-4">

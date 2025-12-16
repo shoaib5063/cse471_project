@@ -20,6 +20,10 @@ const isTimeToSendReminder = (reminderTime) => {
  */
 const checkAndSendReminders = async () => {
   try {
+    const now = new Date();
+    const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    console.log(`⏰ Checking reminders at ${currentTime}...`);
+
     // Get all active reminders
     const reminders = await MealReminder.find({ isActive: true });
 
@@ -43,7 +47,7 @@ const checkAndSendReminders = async () => {
             reminder.lastSentAt = new Date();
             await reminder.save();
 
-            console.log(`✅ Reminder sent for ${reminder.mealType} to ${reminder.email}`);
+            console.log(`✅ Reminder sent for ${reminder.mealType} to user ${reminder.userId} (${reminder.email})`);
           } catch (error) {
             console.error(`❌ Failed to send reminder for ${reminder.mealType}:`, error.message);
           }

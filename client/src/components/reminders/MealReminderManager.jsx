@@ -27,8 +27,14 @@ export default function MealReminderManager({ userId, userEmail }) {
   }, [userId]);
 
   const fetchReminders = async () => {
+    if (!userId) {
+      console.warn('fetchReminders called without userId');
+      return;
+    }
+
     try {
       setLoading(true);
+      console.log(`Fetching reminders for user: ${userId}`);
       const response = await axios.get(
         `${import.meta.env.VITE_API_URL}/api/reminders/user/${userId}`
       );
@@ -36,7 +42,7 @@ export default function MealReminderManager({ userId, userEmail }) {
       setError('');
     } catch (err) {
       console.error('Error fetching reminders:', err);
-      setError('Failed to load reminders');
+      setError(`Failed to load reminders: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -158,13 +164,17 @@ export default function MealReminderManager({ userId, userEmail }) {
           <Bell className="h-6 w-6 text-green-600" />
           <h3 className="text-lg font-semibold text-gray-900">Meal Reminders</h3>
         </div>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition"
-        >
-          <Plus className="h-4 w-4" />
-          Add Reminder
-        </button>
+        <div className="flex items-center gap-3">
+
+
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition"
+          >
+            <Plus className="h-4 w-4" />
+            Add Reminder
+          </button>
+        </div>
       </div>
 
       {/* Add Reminder Form */}
@@ -262,11 +272,10 @@ export default function MealReminderManager({ userId, userEmail }) {
           reminders.map((reminder) => (
             <div
               key={reminder._id}
-              className={`bg-white border rounded-lg p-4 transition ${
-                reminder.isActive
-                  ? 'border-green-200 bg-green-50'
-                  : 'border-gray-200 bg-gray-50'
-              }`}
+              className={`bg-white border rounded-lg p-4 transition ${reminder.isActive
+                ? 'border-green-200 bg-green-50'
+                : 'border-gray-200 bg-gray-50'
+                }`}
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
@@ -301,11 +310,10 @@ export default function MealReminderManager({ userId, userEmail }) {
                     </div>
 
                     <span
-                      className={`text-sm px-2 py-1 rounded ${
-                        reminder.isActive
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-gray-100 text-gray-800'
-                      }`}
+                      className={`text-sm px-2 py-1 rounded ${reminder.isActive
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-gray-100 text-gray-800'
+                        }`}
                     >
                       {reminder.isActive ? 'Active' : 'Inactive'}
                     </span>

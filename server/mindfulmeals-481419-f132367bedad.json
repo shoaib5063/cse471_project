@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "mindfulmeals-481419",
+  "private_key_id": "f132367bedad3c4ce56b49e6f64f57986716ff2c",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC2R4120VSosOz5\n804G5dDy1U1jouswkVWqhJb88wemhhsWSqz5H1gjOHAJTMzy1Zlwvfv83te91tzy\nEwap2TlgxuFLZjRapYbVL15D951zygC3wm4N666AVis1dODTuej0kzm1119NVGL6\n4eZpag1nP4Xb2ZlnL71/QfX8WGCUAwIiCgzzksXjDbmsa5AJHsMZF2pSP3IdUc8F\nvJsUob7GEnUjjzBs6OweqS77uiP1cDvGwm9DTRwb+eA60Pkinfd63DfM3oxniLic\npi0Jqan4T5V8T/6KJyuA5CHMehiGxAqXHvm3UVvbgsTbgMu7NtOp144C3gYz7tIM\nUpF8EYxrAgMBAAECggEAD3iaQrP4vgqqSnrCrCY0am/9ThAlay1iuoLfd9++zf0C\n7ozvCoQFDJQ9OiTZHmFP0Thm22skn5nNjgRcY+0qiBLJS4eEuQ7kl1KaayVoqUvD\nbNVlVuwilwT5TOO7M21LnvqiAtOhZKRddFLZJihYs+M53tOkyBPOvy7fjIgJxnYo\nLF/WhL3/VJI8BjdnJxzuMz8exoNRhTCv/e0n92pNcyH8IVCTSyvP2JZzQyPHKRUK\nIJHSy3spAm5CbTGwNNUFsJo78Kv1Sr0V1jPEjvxBt4KNNWRuywza/wdykbFIo9dm\nLAll9EKUeOFnjrHMxMDgXdQ/hpbcpvlEKorzB02m8QKBgQDk70j8whvSj8KPb7l1\nfVIZhWyIWK5qMRefxecwt1mCqUeDuA0oaBJsxGluDwIKGY0nbxiFhEOYjFWw0ub5\ntRjQksFztG8PHX/wDfxdMW3yM6vLhjNxGoaTQshUc8MNer5eMxtL9iZb6V8GQSE2\negeNDbW8EbMG5uNVL/nBpcUcGwKBgQDL1D8ZyQQTNz1sQjLhbnTQaWGRYiX1SIQK\n0Twem60fTi2IumGI0w9J1UDjWGjttPFcHAVXy4LmC4V+qKOuFQgJ8+muWqqhRQvo\n1Czq/HwGYp9iOrOW9qaBpqDTWJVucyI6z2eSKCRFEsxZyUbe41x24MT0E0C1cUSv\n7nOSFhm18QKBgQCKxJR8SXit6GApq7JCCkWynJKODxsh2UIVodMiT3EdZ1im+fBX\n1sWcUm4JvWUiFBzgk1HM1MBYfnAOr7g8Ek7JVruWU/+hrOL48rFPGAAp+LIguucB\nnu+F4cwmjMjlqcostVPNdpYHzmzAEMh+Cff7wxyutBfNjjSsVVlRzRaukwKBgF1R\n1nYCv3fgwaFwCYWGobrNlJsQWZqcUb/2HdVRpwh/LX+8/Wy8XPKLzUKJNrkmL57h\nQVz50vtp6PudUBsii+SqpKFr51UgnJxDkDEh2dK+koRRpemHEaKoXFeG5huEYPaW\nALA86qYpPiAZc/YWGD5hGCs7KVQpAK6fuI/4yFqxAoGAaXr/YSNBj3PL4sbRNZ5o\nx5VtZOMUByK+xax2QEc58dcbBqn1s/VI6Nxx9ypGia15bZlg5ID4KXFLAlwH/xXN\n4jTG0X0G1jD8GlRpJJhdtg3a9cVgWaUwdx5frEWBrW4VLgsAVt1lcQwOY5xZiv1E\n1td/IzIE8dD2gVq/ns40LnI=\n-----END PRIVATE KEY-----\n",
+  "client_email": "mindfulmeals@mindfulmeals-481419.iam.gserviceaccount.com",
+  "client_id": "106042959815834673354",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/mindfulmeals%40mindfulmeals-481419.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

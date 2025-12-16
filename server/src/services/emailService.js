@@ -1,19 +1,24 @@
 /**
- * Brevo (Sendinblue) / Sib API integration for sending meal reminder emails
- * Uses the official `sib-api-v3-sdk` package
+ * Nodemailer integration for sending meal reminder emails
+ * Uses standard SMTP (e.g., Gmail)
  */
-const SibApiV3Sdk = require('sib-api-v3-sdk');
+const nodemailer = require('nodemailer');
 
-// Configure Brevo API key
-const defaultClient = SibApiV3Sdk.ApiClient.instance;
-if (!process.env.BREVO_API_KEY) {
-  console.error('❌ BREVO_API_KEY is not set. Set BREVO_API_KEY in your environment.');
-}
-if (defaultClient && defaultClient.authentications && defaultClient.authentications['api-key']) {
-  defaultClient.authentications['api-key'].apiKey = process.env.BREVO_API_KEY || '';
-}
+const createTransporter = () => {
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    console.warn('⚠️ EMAIL_USER or EMAIL_PASS not set. Emails will not send.');
+    // Return a dummy transporter or null to handle gracefully
+    return null;
+  }
 
-const transactionalApi = new SibApiV3Sdk.TransactionalEmailsApi();
+  return nodemailer.createTransport({
+    service: 'gmail', // easy setup for Gmail
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS, // App Password, not login password
+    },
+  });
+};
 
 const buildHtml = (mealType, mealName) => {
   return `<!DOCTYPE html>
@@ -62,72 +67,50 @@ const buildHtml = (mealType, mealName) => {
 };
 
 /**
- * Send meal reminder via Brevo (Sendinblue)
+ * Send meal reminder via Nodemailer
  * @param {string} userEmail
  * @param {string} mealType
  * @param {string} mealName
  */
 const sendMealReminderEmail = async (userEmail, mealType, mealName) => {
+  const transporter = createTransporter();
+  if (!transporter) {
+    console.error('❌ Cannot send email: Transporter not configured (missing env vars)');
+    return;
+  }
+
   try {
-    const sender = {
-      name: process.env.BREVO_FROM_NAME || 'MindfulMeals',
-      email: process.env.BREVO_FROM_EMAIL || 'noreply@mindfulmeals.com',
-    };
-
-    const to = [{ email: userEmail }];
-
     const htmlContent = buildHtml(mealType, mealName);
 
-    const sendSmtpEmail = {
-      sender,
-      to,
+    const info = await transporter.sendMail({
+      from: `"MindfulMeals" <${process.env.EMAIL_USER}>`,
+      to: userEmail,
       subject: `🍽️ Time for ${mealType.charAt(0).toUpperCase() + mealType.slice(1)}!`,
-      htmlContent,
-    };
+      html: htmlContent,
+    });
 
-    const response = await transactionalApi.sendTransacEmail(sendSmtpEmail);
-    console.log(`✅ Meal reminder email sent to ${userEmail}`);
-    return response;
+    console.log(`✅ Meal reminder email sent to ${userEmail}. MessageId: ${info.messageId}`);
+    return info;
   } catch (error) {
-    // Improve error logging to surface Brevo SDK details
-    console.error('❌ Error sending meal reminder email via Brevo:');
-    if (error && error.response) {
-      try {
-        console.error('Brevo response status:', error.status || error.response.status);
-        console.error('Brevo response body:', JSON.stringify(error.response, null, 2));
-      } catch (e) {
-        console.error('Brevo error (could not stringify):', error.response);
-      }
-    } else if (error && error.body) {
-      console.error('Brevo error body:', error.body);
-    } else {
-      console.error(error);
-    }
-
-    // Provide a clearer error message for common auth issues
-    if (String(error).toLowerCase().includes('unauthorized') || String(error).toLowerCase().includes('401')) {
-      throw new Error('Brevo Unauthorized: check BREVO_API_KEY and that the sender email is verified in your Brevo account.');
-    }
-
+    console.error('❌ Error sending meal reminder email via Nodemailer:', error);
     throw error;
   }
 };
 
 /**
- * Send question reply email via Brevo (Sendinblue)
+ * Send question reply email via Nodemailer
  * @param {string} userEmail
  * @param {string} question
  * @param {string} answer
  */
 const sendQuestionReplyEmail = async (userEmail, question, answer) => {
+  const transporter = createTransporter();
+  if (!transporter) {
+    console.error('❌ Cannot send email: Transporter not configured');
+    return;
+  }
+
   try {
-    const sender = {
-      name: process.env.BREVO_FROM_NAME || 'MindfulMeals',
-      email: process.env.BREVO_FROM_EMAIL || 'noreply@mindfulmeals.com',
-    };
-
-    const to = [{ email: userEmail }];
-
     const htmlContent = `<!DOCTYPE html>
     <html>
       <head>
@@ -168,18 +151,17 @@ const sendQuestionReplyEmail = async (userEmail, question, answer) => {
       </body>
     </html>`;
 
-    const sendSmtpEmail = {
-      sender,
-      to,
+    const info = await transporter.sendMail({
+      from: `"MindfulMeals Expert" <${process.env.EMAIL_USER}>`,
+      to: userEmail,
       subject: `✅ Answer to your health question`,
-      htmlContent,
-    };
+      html: htmlContent,
+    });
 
-    const response = await transactionalApi.sendTransacEmail(sendSmtpEmail);
-    console.log(`✅ Question reply email sent to ${userEmail}`);
-    return response;
+    console.log(`✅ Question reply email sent to ${userEmail}. MessageId: ${info.messageId}`);
+    return info;
   } catch (error) {
-    console.error('❌ Error sending question reply email:');
+    console.error('❌ Error sending question reply email:', error);
     throw error;
   }
 };
