@@ -3,14 +3,19 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
-import { Plus } from 'lucide-react';
+import { Plus, Search, X } from 'lucide-react';
 import axios from 'axios';
+
 
 export default function MealTrackingPage() {
   const { user, loading, userProfile } = useAuth();
   const navigate = useNavigate();
   const [meals, setMeals] = useState([]);
   const [showAddMeal, setShowAddMeal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [searching, setSearching] = useState(false);
+  const [selectedFoods, setSelectedFoods] = useState([]);
   const [newMeal, setNewMeal] = useState({
     mealName: '',
     mealType: 'breakfast',
@@ -20,21 +25,115 @@ export default function MealTrackingPage() {
     fats: '',
   });
 
+
   useEffect(() => {
     if (!loading && !user) navigate('/auth');
   }, [user, loading, navigate]);
 
+
   useEffect(() => {
-    if (user) fetchMeals();
+    if (user && user.uid) {
+      console.log('Fetching meals for user:', user.uid);
+      fetchMeals();
+    }
   }, [user]);
+
 
   const fetchMeals = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/meals?userId=${user.uid}`);
-      setMeals(response.data.data || []);
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/meals/user/${user.uid}`);
+      console.log('Meals response:', response.data);
+      // Backend returns array directly, not wrapped in { data: [...] }
+      setMeals(response.data || []);
     } catch (error) {
       console.error('Error fetching meals:', error);
     }
+  };
+
+
+  const searchFood = async (query) => {
+    if (!query || query.length < 2) {
+      setSearchResults([]);
+      return;
+    }
+
+    setSearching(true);
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/meals/search?query=${query}`
+      );
+      setSearchResults(response.data || []);
+    } catch (error) {
+      console.error('Error searching food:', error);
+      setSearchResults([]);
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  const handleSearchChange = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    searchFood(query);
+  };
+
+  const addFoodToMeal = (food) => {
+    const newFood = {
+      fdcId: food.fdcId,
+      description: food.description,
+      quantity: 1,
+      servingSize: food.servingSize,
+      servingSizeUnit: food.servingSizeUnit,
+      nutrients: food.nutrients
+    };
+    
+    setSelectedFoods([...selectedFoods, newFood]);
+    
+    // Calculate total nutrition
+    const totalNutrition = [...selectedFoods, newFood].reduce((acc, f) => {
+      const multiplier = f.quantity || 1;
+      return {
+        calories: acc.calories + (f.nutrients.calories * multiplier),
+        protein: acc.protein + (f.nutrients.protein * multiplier),
+        carbs: acc.carbs + (f.nutrients.carbs * multiplier),
+        fat: acc.fat + (f.nutrients.fat * multiplier),
+      };
+    }, { calories: 0, protein: 0, carbs: 0, fat: 0 });
+
+    setNewMeal({
+      ...newMeal,
+      calories: Math.round(totalNutrition.calories).toString(),
+      protein: Math.round(totalNutrition.protein).toString(),
+      carbs: Math.round(totalNutrition.carbs).toString(),
+      fats: Math.round(totalNutrition.fat).toString(),
+    });
+
+    setSearchQuery('');
+    setSearchResults([]);
+  };
+
+  const removeFoodFromMeal = (index) => {
+    const updatedFoods = selectedFoods.filter((_, i) => i !== index);
+    setSelectedFoods(updatedFoods);
+
+    // Recalculate nutrition
+    const totalNutrition = updatedFoods.reduce((acc, f) => {
+      const multiplier = f.quantity || 1;
+      return {
+        calories: acc.calories + (f.nutrients.calories * multiplier),
+        protein: acc.protein + (f.nutrients.protein * multiplier),
+        carbs: acc.carbs + (f.nutrients.carbs * multiplier),
+        fat: acc.fat + (f.nutrients.fat * multiplier),
+      };
+    }, { calories: 0, protein: 0, carbs: 0, fat: 0 });
+
+    setNewMeal({
+      ...newMeal,
+      calories: Math.round(totalNutrition.calories).toString(),
+      protein: Math.round(totalNutrition.protein).toString(),
+      carbs: Math.round(totalNutrition.carbs).toString(),
+      fats: Math.round(totalNutrition.fat).toString(),
+    });
   };
 
   const handleAddMeal = async (e) => {
@@ -42,8 +141,24 @@ export default function MealTrackingPage() {
     try {
       await axios.post(`${import.meta.env.VITE_API_URL}/api/meals`, {
         userId: user.uid,
-        ...newMeal,
+        mealName: newMeal.mealName,
+        mealType: newMeal.mealType,
         date: new Date().toISOString(),
+        nutrition: {
+          calories: parseFloat(newMeal.calories) || 0,
+          protein: parseFloat(newMeal.protein) || 0,
+          carbs: parseFloat(newMeal.carbs) || 0,
+          fat: parseFloat(newMeal.fats) || 0,
+          fiber: 0,
+          sugar: 0
+        },
+        foodItems: selectedFoods.map(f => ({
+          fdcId: f.fdcId,
+          description: f.description,
+          quantity: f.quantity || 1,
+          servingSize: f.servingSize,
+          servingSizeUnit: f.servingSizeUnit
+        }))
       });
       setShowAddMeal(false);
       setNewMeal({
@@ -54,6 +169,9 @@ export default function MealTrackingPage() {
         carbs: '',
         fats: '',
       });
+      setSelectedFoods([]);
+      setSearchQuery('');
+      setSearchResults([]);
       fetchMeals();
     } catch (error) {
       console.error('Error adding meal:', error);
@@ -90,7 +208,7 @@ export default function MealTrackingPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <input
                     type="text"
-                    placeholder="Meal Name"
+                    placeholder="Meal Name (e.g., Breakfast)"
                     value={newMeal.mealName}
                     onChange={(e) => setNewMeal({ ...newMeal, mealName: e.target.value })}
                     className="px-3 py-2 border border-gray-300 rounded-md"
@@ -107,6 +225,64 @@ export default function MealTrackingPage() {
                     <option value="snack">Snack</option>
                   </select>
                 </div>
+
+                {/* Food Search */}
+                <div className="relative">
+                  <div className="flex items-center">
+                    <Search className="absolute left-3 h-5 w-5 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="Search for foods (e.g., chicken, rice, apple)..."
+                      value={searchQuery}
+                      onChange={handleSearchChange}
+                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md"
+                    />
+                  </div>
+                  
+                  {searching && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg p-4">
+                      <p className="text-gray-500">Searching...</p>
+                    </div>
+                  )}
+
+                  {searchResults.length > 0 && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-64 overflow-y-auto">
+                      {searchResults.map((food) => (
+                        <button
+                          key={food.fdcId}
+                          type="button"
+                          onClick={() => addFoodToMeal(food)}
+                          className="w-full text-left px-4 py-3 hover:bg-gray-100 border-b border-gray-200"
+                        >
+                          <p className="font-medium text-gray-900">{food.description}</p>
+                          <p className="text-sm text-gray-600">
+                            {food.brandName} | {food.servingSize}{food.servingSizeUnit} | {food.nutrients.calories} cal
+                          </p>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Selected Foods */}
+                {selectedFoods.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-gray-700">Selected Foods:</p>
+                    {selectedFoods.map((food, index) => (
+                      <div key={index} className="flex items-center justify-between bg-white p-2 rounded border border-gray-200">
+                        <span className="text-sm">{food.description}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeFoodFromMeal(index)}
+                          className="text-red-600 hover:text-red-800"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <input
                     type="number"
@@ -147,7 +323,20 @@ export default function MealTrackingPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setShowAddMeal(false)}
+                    onClick={() => {
+                      setShowAddMeal(false);
+                      setSelectedFoods([]);
+                      setSearchQuery('');
+                      setSearchResults([]);
+                      setNewMeal({
+                        mealName: '',
+                        mealType: 'breakfast',
+                        calories: '',
+                        protein: '',
+                        carbs: '',
+                        fats: '',
+                      });
+                    }}
                     className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
                   >
                     Cancel
@@ -169,9 +358,9 @@ export default function MealTrackingPage() {
                       <p className="text-sm text-gray-600 capitalize">{meal.mealType}</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold text-gray-900">{meal.calories} cal</p>
+                      <p className="font-semibold text-gray-900">{meal.nutrition?.calories || 0} cal</p>
                       <p className="text-sm text-gray-600">
-                        P: {meal.protein}g | C: {meal.carbs}g | F: {meal.fats}g
+                        P: {meal.nutrition?.protein || 0}g | C: {meal.nutrition?.carbs || 0}g | F: {meal.nutrition?.fat || 0}g
                       </p>
                     </div>
                   </div>
@@ -185,4 +374,3 @@ export default function MealTrackingPage() {
     </div>
   );
 }
-
