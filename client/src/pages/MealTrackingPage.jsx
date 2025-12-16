@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
+import MoodTracker from '../components/MoodTracker';
 import { Plus, Search, X } from 'lucide-react';
 import axios from 'axios';
-
 
 export default function MealTrackingPage() {
   const { user, loading, userProfile } = useAuth();
@@ -16,6 +16,12 @@ export default function MealTrackingPage() {
   const [searchResults, setSearchResults] = useState([]);
   const [searching, setSearching] = useState(false);
   const [selectedFoods, setSelectedFoods] = useState([]);
+  
+  // NEW: Mood tracking states
+  const [moodBefore, setMoodBefore] = useState(null);
+  const [moodAfter, setMoodAfter] = useState(null);
+  const [moodNotes, setMoodNotes] = useState('');
+  
   const [newMeal, setNewMeal] = useState({
     mealName: '',
     mealType: 'breakfast',
@@ -25,11 +31,9 @@ export default function MealTrackingPage() {
     fats: '',
   });
 
-
   useEffect(() => {
     if (!loading && !user) navigate('/auth');
   }, [user, loading, navigate]);
-
 
   useEffect(() => {
     if (user && user.uid) {
@@ -38,18 +42,15 @@ export default function MealTrackingPage() {
     }
   }, [user]);
 
-
   const fetchMeals = async () => {
     try {
       const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/meals/user/${user.uid}`);
       console.log('Meals response:', response.data);
-      // Backend returns array directly, not wrapped in { data: [...] }
       setMeals(response.data || []);
     } catch (error) {
       console.error('Error fetching meals:', error);
     }
   };
-
 
   const searchFood = async (query) => {
     if (!query || query.length < 2) {
@@ -89,7 +90,6 @@ export default function MealTrackingPage() {
     
     setSelectedFoods([...selectedFoods, newFood]);
     
-    // Calculate total nutrition
     const totalNutrition = [...selectedFoods, newFood].reduce((acc, f) => {
       const multiplier = f.quantity || 1;
       return {
@@ -116,7 +116,6 @@ export default function MealTrackingPage() {
     const updatedFoods = selectedFoods.filter((_, i) => i !== index);
     setSelectedFoods(updatedFoods);
 
-    // Recalculate nutrition
     const totalNutrition = updatedFoods.reduce((acc, f) => {
       const multiplier = f.quantity || 1;
       return {
@@ -134,6 +133,13 @@ export default function MealTrackingPage() {
       carbs: Math.round(totalNutrition.carbs).toString(),
       fats: Math.round(totalNutrition.fat).toString(),
     });
+  };
+
+  // NEW: Handle mood changes
+  const handleMoodChange = (field, value) => {
+    if (field === 'moodBefore') setMoodBefore(value);
+    else if (field === 'moodAfter') setMoodAfter(value);
+    else if (field === 'moodNotes') setMoodNotes(value);
   };
 
   const handleAddMeal = async (e) => {
@@ -158,8 +164,14 @@ export default function MealTrackingPage() {
           quantity: f.quantity || 1,
           servingSize: f.servingSize,
           servingSizeUnit: f.servingSizeUnit
-        }))
+        })),
+        // NEW: Include mood data
+        moodBefore,
+        moodAfter,
+        moodNotes
       });
+      
+      // Reset form
       setShowAddMeal(false);
       setNewMeal({
         mealName: '',
@@ -172,10 +184,26 @@ export default function MealTrackingPage() {
       setSelectedFoods([]);
       setSearchQuery('');
       setSearchResults([]);
+      setMoodBefore(null);
+      setMoodAfter(null);
+      setMoodNotes('');
+      
       fetchMeals();
     } catch (error) {
       console.error('Error adding meal:', error);
     }
+  };
+
+  // NEW: Get mood emoji for display
+  const getMoodEmoji = (mood) => {
+    const emojiMap = {
+      'very_bad': '😞',
+      'bad': '😕',
+      'neutral': '😐',
+      'good': '😊',
+      'excellent': '😄'
+    };
+    return emojiMap[mood] || '';
   };
 
   if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
@@ -314,6 +342,15 @@ export default function MealTrackingPage() {
                     className="px-3 py-2 border border-gray-300 rounded-md"
                   />
                 </div>
+
+                {/* NEW: Mood Tracker Component */}
+                <MoodTracker
+                  moodBefore={moodBefore}
+                  moodAfter={moodAfter}
+                  moodNotes={moodNotes}
+                  onMoodChange={handleMoodChange}
+                />
+
                 <div className="flex space-x-2">
                   <button
                     type="submit"
@@ -328,6 +365,9 @@ export default function MealTrackingPage() {
                       setSelectedFoods([]);
                       setSearchQuery('');
                       setSearchResults([]);
+                      setMoodBefore(null);
+                      setMoodAfter(null);
+                      setMoodNotes('');
                       setNewMeal({
                         mealName: '',
                         mealType: 'breakfast',
@@ -352,16 +392,37 @@ export default function MealTrackingPage() {
             ) : (
               <div className="space-y-4">
                 {meals.map((meal, index) => (
-                  <div key={index} className="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
-                    <div>
-                      <h3 className="font-semibold text-gray-900">{meal.mealName}</h3>
-                      <p className="text-sm text-gray-600 capitalize">{meal.mealType}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-gray-900">{meal.nutrition?.calories || 0} cal</p>
-                      <p className="text-sm text-gray-600">
-                        P: {meal.nutrition?.protein || 0}g | C: {meal.nutrition?.carbs || 0}g | F: {meal.nutrition?.fat || 0}g
-                      </p>
+                  <div key={index} className="p-4 bg-gray-50 rounded-lg">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="font-semibold text-gray-900">{meal.mealName}</h3>
+                        <p className="text-sm text-gray-600 capitalize">{meal.mealType}</p>
+                        
+                        {/* NEW: Display mood if available */}
+                        {(meal.moodBefore || meal.moodAfter) && (
+                          <div className="mt-2 text-sm text-purple-700">
+                            {meal.moodBefore && (
+                              <span className="mr-3">
+                                Before: {getMoodEmoji(meal.moodBefore)}
+                              </span>
+                            )}
+                            {meal.moodAfter && (
+                              <span>
+                                After: {getMoodEmoji(meal.moodAfter)}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                        {meal.moodNotes && (
+                          <p className="mt-1 text-xs text-gray-500 italic">{meal.moodNotes}</p>
+                        )}
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold text-gray-900">{meal.nutrition?.calories || 0} cal</p>
+                        <p className="text-sm text-gray-600">
+                          P: {meal.nutrition?.protein || 0}g | C: {meal.nutrition?.carbs || 0}g | F: {meal.nutrition?.fat || 0}g
+                        </p>
+                      </div>
                     </div>
                   </div>
                 ))}
