@@ -13,7 +13,9 @@ import {
   ListChecks,
   ChefHat,
   Lightbulb,
+  Calculator,
 } from 'lucide-react';
+import { calculateCalorieGoal } from '../lib/calculations';
 
 export default function HealthMetricsPage() {
   const { user, userProfile, loading } = useAuth();
@@ -21,7 +23,7 @@ export default function HealthMetricsPage() {
   const [metrics, setMetrics] = useState({
     weight: userProfile?.weight || 0,
     bmi: 0,
-    calorieGoal: 2000,
+    calorieGoal: calculateCalorieGoal(userProfile),
     waterIntake: 0,
   });
 
@@ -34,6 +36,11 @@ export default function HealthMetricsPage() {
     { date: '2024-06', weight: 70 },
   ]);
   const [activeSection, setActiveSection] = useState('health-metrics');
+  const [bmiCalculator, setBmiCalculator] = useState({
+    weight: '',
+    height: '',
+    calculatedBMI: null,
+  });
 
   const sections = [
     {
@@ -75,12 +82,52 @@ export default function HealthMetricsPage() {
   }, [user, loading, navigate]);
 
   useEffect(() => {
-    if (userProfile?.weight && userProfile?.height) {
+    if (userProfile) {
       const heightInMeters = userProfile.height / 100;
-      const bmi = (userProfile.weight / (heightInMeters * heightInMeters)).toFixed(1);
-      setMetrics(prev => ({ ...prev, weight: userProfile.weight, bmi }));
+      const bmi = userProfile.weight && userProfile.height 
+        ? (userProfile.weight / (heightInMeters * heightInMeters)).toFixed(1)
+        : 0;
+      const calorieGoal = calculateCalorieGoal(userProfile);
+      setMetrics(prev => ({ 
+        ...prev, 
+        weight: userProfile.weight || 0, 
+        bmi,
+        calorieGoal 
+      }));
     }
   }, [userProfile]);
+
+  const calculateBMI = (weight, height) => {
+    if (!weight || !height || weight <= 0 || height <= 0) {
+      return null;
+    }
+    const heightInMeters = height / 100;
+    const bmi = weight / (heightInMeters * heightInMeters);
+    return parseFloat(bmi.toFixed(1));
+  };
+
+  const getBMICategory = (bmi) => {
+    if (!bmi) return '';
+    if (bmi < 18.5) return 'Underweight';
+    if (bmi < 25) return 'Normal';
+    if (bmi < 30) return 'Overweight';
+    return 'Obese';
+  };
+
+  const getBMIColor = (bmi) => {
+    if (!bmi) return 'text-gray-500';
+    if (bmi < 18.5) return 'text-blue-600';
+    if (bmi < 25) return 'text-green-600';
+    if (bmi < 30) return 'text-orange-600';
+    return 'text-red-600';
+  };
+
+  const handleBMICalculate = () => {
+    const weight = parseFloat(bmiCalculator.weight);
+    const height = parseFloat(bmiCalculator.height);
+    const calculatedBMI = calculateBMI(weight, height);
+    setBmiCalculator(prev => ({ ...prev, calculatedBMI }));
+  };
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
@@ -156,6 +203,95 @@ export default function HealthMetricsPage() {
               <Line type="monotone" dataKey="weight" stroke="#10b981" strokeWidth={2} />
             </LineChart>
           </ResponsiveContainer>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6 mb-8">
+          <div className="flex items-center gap-3 mb-6">
+            <Calculator className="h-6 w-6 text-green-600" />
+            <h2 className="text-xl font-semibold text-gray-900">BMI Calculator</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Weight (kg)
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  step="0.1"
+                  value={bmiCalculator.weight}
+                  onChange={(e) => {
+                    const weight = e.target.value;
+                    setBmiCalculator(prev => ({ ...prev, weight }));
+                    if (weight && bmiCalculator.height) {
+                      const calculatedBMI = calculateBMI(parseFloat(weight), parseFloat(bmiCalculator.height));
+                      setBmiCalculator(prev => ({ ...prev, calculatedBMI }));
+                    } else {
+                      setBmiCalculator(prev => ({ ...prev, calculatedBMI: null }));
+                    }
+                  }}
+                  placeholder="Enter weight in kg"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Height (cm)
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  step="0.1"
+                  value={bmiCalculator.height}
+                  onChange={(e) => {
+                    const height = e.target.value;
+                    setBmiCalculator(prev => ({ ...prev, height }));
+                    if (height && bmiCalculator.weight) {
+                      const calculatedBMI = calculateBMI(parseFloat(bmiCalculator.weight), parseFloat(height));
+                      setBmiCalculator(prev => ({ ...prev, calculatedBMI }));
+                    } else {
+                      setBmiCalculator(prev => ({ ...prev, calculatedBMI: null }));
+                    }
+                  }}
+                  placeholder="Enter height in cm"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+              </div>
+              <button
+                onClick={handleBMICalculate}
+                className="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+              >
+                Calculate BMI
+              </button>
+            </div>
+            <div className="flex items-center justify-center">
+              {bmiCalculator.calculatedBMI ? (
+                <div className="text-center">
+                  <div className={`text-6xl font-bold mb-2 ${getBMIColor(bmiCalculator.calculatedBMI)}`}>
+                    {bmiCalculator.calculatedBMI}
+                  </div>
+                  <div className={`text-lg font-semibold ${getBMIColor(bmiCalculator.calculatedBMI)}`}>
+                    {getBMICategory(bmiCalculator.calculatedBMI)}
+                  </div>
+                  <div className="mt-4 pt-4 border-t border-gray-200">
+                    <p className="text-sm text-gray-600 mb-2">BMI Categories:</p>
+                    <div className="text-xs text-gray-500 space-y-1">
+                      <p>Underweight: &lt; 18.5</p>
+                      <p>Normal: 18.5 - 24.9</p>
+                      <p>Overweight: 25 - 29.9</p>
+                      <p>Obese: ≥ 30</p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center text-gray-400">
+                  <Scale className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                  <p>Enter weight and height to calculate BMI</p>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
