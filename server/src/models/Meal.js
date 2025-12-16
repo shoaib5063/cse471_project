@@ -30,6 +30,21 @@ const mealSchema = new mongoose.Schema({
     fiber: { type: Number, default: 0 },
     sugar: { type: Number, default: 0 }
   },
+  // NEW: Mood tracking fields for emotional eating patterns
+  moodBefore: {
+    type: String,
+    enum: ['very_bad', 'bad', 'neutral', 'good', 'excellent', null],
+    default: null
+  },
+  moodAfter: {
+    type: String,
+    enum: ['very_bad', 'bad', 'neutral', 'good', 'excellent', null],
+    default: null
+  },
+  moodNotes: {
+    type: String,
+    default: ''
+  },
   date: {
     type: Date,
     default: Date.now
