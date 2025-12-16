@@ -6,20 +6,28 @@ import { TrendingUp, Calendar, Brain } from 'lucide-react';
 import axios from 'axios';
 
 const MoodPatternsPage = () => {
-  const { currentUser } = useAuth();
+  const { user } = useAuth();
+
   const [moodData, setMoodData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState('7days');
+  console.log('🚀 MoodPatternsPage loaded');
+  console.log('👤 user:', user);
+  console.log('👤 user:', user);
 
   useEffect(() => {
-    if (currentUser) {
+    if (user) {
       fetchMoodPatterns();
     }
-  }, [currentUser, timeRange]);
+  }, [user, timeRange]);
 
   const fetchMoodPatterns = async () => {
     try {
       setLoading(true);
+      console.log('🔍 Starting to fetch mood patterns...');
+      console.log('👤 Current user:', user);
+      console.log('🆔 User ID:', user?.uid);
+      
       const endDate = new Date();
       const startDate = new Date();
       
@@ -31,21 +39,31 @@ const MoodPatternsPage = () => {
         startDate.setDate(endDate.getDate() - 90);
       }
 
-      const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/meals/mood-patterns/${currentUser.uid}`,
-        {
-          params: {
-            startDate: startDate.toISOString(),
-            endDate: endDate.toISOString()
-          }
+      console.log('📅 Date range:', {
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString()
+      });
+
+      const apiUrl = `${import.meta.env.VITE_API_URL}/api/meals/mood-patterns/${user.uid}`;
+      console.log('🌐 API URL:', apiUrl);
+
+      const response = await axios.get(apiUrl, {
+        params: {
+          startDate: startDate.toISOString(),
+          endDate: endDate.toISOString()
         }
-      );
+      });
+
+      console.log('✅ Response received:', response.data);
+      console.log('📊 Mood data count:', response.data.data?.length);
 
       setMoodData(response.data.data || []);
     } catch (error) {
-      console.error('Error fetching mood patterns:', error);
+      console.error('❌ Error fetching mood patterns:', error);
+      console.error('❌ Error details:', error.response?.data);
     } finally {
       setLoading(false);
+      console.log('✅ Loading finished');
     }
   };
 
@@ -259,7 +277,7 @@ const MoodPatternsPage = () => {
                 {stats.improvementRate < 40 && (
                   <li>⚠️ Many meals aren't improving your mood. Consider reviewing your eating habits.</li>
                 )}
-                {stats.mostCommonBefore === 'very_bad' || stats.mostCommonBefore === 'bad' && (
+                {(stats.mostCommonBefore === 'very_bad' || stats.mostCommonBefore === 'bad') && (
                   <li>🤔 You often feel down before eating. Try stress-relief techniques before meals.</li>
                 )}
                 {stats.totalMeals < 5 && (

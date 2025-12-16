@@ -91,8 +91,11 @@ const getFoodDetails = async (req, res) => {
 // Log a new meal
 const logMeal = async (req, res) => {
   try {
-    const { userId, mealName, mealType, foodItems, nutrition, date } = req.body;
-
+    const { userId, mealName, mealType, foodItems, nutrition, date, moodBefore, moodAfter, moodNotes } = req.body;
+    
+    console.log('📝 Logging meal:', { mealName, mealType });
+    console.log('😊 Mood data received:', { moodBefore, moodAfter, moodNotes });
+    
     if (!userId || !mealName || !mealType) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
@@ -101,11 +104,16 @@ const logMeal = async (req, res) => {
       userId,
       mealName,
       mealType,
-      foodItems,
+      foodItems: foodItems || [],
       nutrition,
-      date: date || new Date()
+      date: date || new Date(),
+      moodBefore,
+      moodAfter,
+      moodNotes
     });
 
+    console.log('💾 Saving meal with mood:', meal);
+    
     await meal.save();
     res.status(201).json({ message: 'Meal logged successfully', meal });
   } catch (error) {

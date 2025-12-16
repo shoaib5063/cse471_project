@@ -95,8 +95,8 @@ router.get('/mood-patterns/:userId', async (req, res) => {
     const query = { 
       userId,
       $or: [
-        { moodBefore: { $ne: null } },
-        { moodAfter: { $ne: null } }
+        { moodBefore: { $exists: true, $ne: null } },
+        { moodAfter: { $exists: true, $ne: null } }
       ]
     };
     

@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 
 const HealthFormPage = () => {
-  const { currentUser } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [suggestions, setSuggestions] = useState(null);
@@ -27,7 +27,7 @@ const HealthFormPage = () => {
     const loadHealthProfile = async () => {
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/health/${currentUser.uid}/health-profile`
+          `${import.meta.env.VITE_API_URL}/api/health/${user.uid}/health-profile`
         );
         if (response.data.data) {
           const profile = response.data.data;
@@ -49,10 +49,10 @@ const HealthFormPage = () => {
       }
     };
 
-    if (currentUser) {
+    if (user) {
       loadHealthProfile();
     }
-  }, [currentUser]);
+  }, [user]);
 
   const handleCheckboxChange = (category, value) => {
     setFormData(prev => {
@@ -94,7 +94,7 @@ const HealthFormPage = () => {
 
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/health/${currentUser.uid}/health-form`,
+        `${import.meta.env.VITE_API_URL}/api/health/${user.uid}/health-form`,
         formData
       );
 
