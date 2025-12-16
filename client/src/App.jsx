@@ -12,6 +12,8 @@ import HealthTipsPage from './pages/HealthTipsPage';
 import ProfilePage from './pages/ProfilePage';
 import HealthMetricsPage from './pages/HealthMetricsPage';
 import AdminPage from './pages/AdminPage';
+import HealthFormPage from './pages/HealthFormPage';
+
 
 function App() {
   return (
@@ -28,6 +30,8 @@ function App() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/health-metrics" element={<HealthMetricsPage />} />
           <Route path="/admin" element={<AdminPage />} />
+          <Route path="/health-form" element={<HealthFormPage />} />
+          
         </Routes>
       </AuthProvider>
     </BrowserRouter>
