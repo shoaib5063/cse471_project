@@ -1,12 +1,8 @@
 ﻿node_modules/
-.env
 dist/
 build/
 *.log
 .DS_Store
-.env.example
-*.json
-!package.json
-!package-lock.json
-server/mindfulmeals-481419-f132367bedad.json
+
+
 
