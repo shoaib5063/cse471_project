@@ -1,0 +1,491 @@
+{
+  "info": {
+    "name": "Spoonacular API Tests",
+    "description": "Collection to test Spoonacular API endpoints for recipe search and nutrition",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Recipe Search",
+      "item": [
+        {
+          "name": "Complex Search - All Recipes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://api.spoonacular.com/recipes/complexSearch?apiKey={{SPOONACULAR_API_KEY}}&number=10&addRecipeInformation=true&addRecipeNutrition=true",
+              "protocol": "https",
+              "host": [
+                "api",
+                "spoonacular",
+                "com"
+              ],
+              "path": [
+                "recipes",
+                "complexSearch"
+              ],
+              "query": [
+                {
+                  "key": "apiKey",
+                  "value": "{{SPOONACULAR_API_KEY}}"
+                },
+                {
+                  "key": "number",
+                  "value": "10"
+                },
+                {
+                  "key": "addRecipeInformation",
+                  "value": "true"
+                },
+                {
+                  "key": "addRecipeNutrition",
+                  "value": "true"
+                }
+              ]
+            },
+            "description": "Get 10 random recipes with full information and nutrition data"
+          },
+          "response": []
+        },
+        {
+          "name": "Search by Diet - Vegetarian",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://api.spoonacular.com/recipes/complexSearch?apiKey={{SPOONACULAR_API_KEY}}&diet=vegetarian&number=10&addRecipeInformation=true&addRecipeNutrition=true",
+              "protocol": "https",
+              "host": [
+                "api",
+                "spoonacular",
+                "com"
+              ],
+              "path": [
+                "recipes",
+                "complexSearch"
+              ],
+              "query": [
+                {
+                  "key": "apiKey",
+                  "value": "{{SPOONACULAR_API_KEY}}"
+                },
+                {
+                  "key": "diet",
+                  "value": "vegetarian"
+                },
+                {
+                  "key": "number",
+                  "value": "10"
+                },
+                {
+                  "key": "addRecipeInformation",
+                  "value": "true"
+                },
+                {
+                  "key": "addRecipeNutrition",
+                  "value": "true"
+                }
+              ]
+            },
+            "description": "Get 10 vegetarian recipes"
+          },
+          "response": []
+        },
+        {
+          "name": "Search by Diet - Keto",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://api.spoonacular.com/recipes/complexSearch?apiKey={{SPOONACULAR_API_KEY}}&diet=ketogenic&number=10&addRecipeInformation=true&addRecipeNutrition=true",
+              "protocol": "https",
+              "host": [
+                "api",
+                "spoonacular",
+                "com"
+              ],
+              "path": [
+                "recipes",
+                "complexSearch"
+              ],
+              "query": [
+                {
+                  "key": "apiKey",
+                  "value": "{{SPOONACULAR_API_KEY}}"
+                },
+                {
+                  "key": "diet",
+                  "value": "ketogenic"
+                },
+                {
+                  "key": "number",
+                  "value": "10"
+                },
+                {
+                  "key": "addRecipeInformation",
+                  "value": "true"
+                },
+                {
+                  "key": "addRecipeNutrition",
+                  "value": "true"
+                }
+              ]
+            },
+            "description": "Get 10 keto/ketogenic recipes"
+          },
+          "response": []
+        },
+        {
+          "name": "Search by Diet - Gluten Free",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://api.spoonacular.com/recipes/complexSearch?apiKey={{SPOONACULAR_API_KEY}}&diet=glutenFree&number=10&addRecipeInformation=true&addRecipeNutrition=true",
+              "protocol": "https",
+              "host": [
+                "api",
+                "spoonacular",
+                "com"
+              ],
+              "path": [
+                "recipes",
+                "complexSearch"
+              ],
+              "query": [
+                {
+                  "key": "apiKey",
+                  "value": "{{SPOONACULAR_API_KEY}}"
+                },
+                {
+                  "key": "diet",
+                  "value": "glutenFree"
+                },
+                {
+                  "key": "number",
+                  "value": "10"
+                },
+                {
+                  "key": "addRecipeInformation",
+                  "value": "true"
+                },
+                {
+                  "key": "addRecipeNutrition",
+                  "value": "true"
+                }
+              ]
+            },
+            "description": "Get 10 gluten-free recipes"
+          },
+          "response": []
+        },
+        {
+          "name": "Search by Meal Type - Breakfast",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://api.spoonacular.com/recipes/complexSearch?apiKey={{SPOONACULAR_API_KEY}}&type=breakfast&number=10&addRecipeInformation=true&addRecipeNutrition=true",
+              "protocol": "https",
+              "host": [
+                "api",
+                "spoonacular",
+                "com"
+              ],
+              "path": [
+                "recipes",
+                "complexSearch"
+              ],
+              "query": [
+                {
+                  "key": "apiKey",
+                  "value": "{{SPOONACULAR_API_KEY}}"
+                },
+                {
+                  "key": "type",
+                  "value": "breakfast"
+                },
+                {
+                  "key": "number",
+                  "value": "10"
+                },
+                {
+                  "key": "addRecipeInformation",
+                  "value": "true"
+                },
+                {
+                  "key": "addRecipeNutrition",
+                  "value": "true"
+                }
+              ]
+            },
+            "description": "Get 10 breakfast recipes"
+          },
+          "response": []
+        },
+        {
+          "name": "Search by Max Calories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://api.spoonacular.com/recipes/complexSearch?apiKey={{SPOONACULAR_API_KEY}}&maxCalories=600&number=10&addRecipeInformation=true&addRecipeNutrition=true",
+              "protocol": "https",
+              "host": [
+                "api",
+                "spoonacular",
+                "com"
+              ],
+              "path": [
+                "recipes",
+                "complexSearch"
+              ],
+              "query": [
+                {
+                  "key": "apiKey",
+                  "value": "{{SPOONACULAR_API_KEY}}"
+                },
+                {
+                  "key": "maxCalories",
+                  "value": "600"
+                },
+                {
+                  "key": "number",
+                  "value": "10"
+                },
+                {
+                  "key": "addRecipeInformation",
+                  "value": "true"
+                },
+                {
+                  "key": "addRecipeNutrition",
+                  "value": "true"
+                }
+              ]
+            },
+            "description": "Get 10 recipes with max 600 calories"
+          },
+          "response": []
+        },
+        {
+          "name": "Search by Ingredients",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://api.spoonacular.com/recipes/complexSearch?apiKey={{SPOONACULAR_API_KEY}}&includeIngredients=chicken,rice&number=10&addRecipeInformation=true&addRecipeNutrition=true",
+              "protocol": "https",
+              "host": [
+                "api",
+                "spoonacular",
+                "com"
+              ],
+              "path": [
+                "recipes",
+                "complexSearch"
+              ],
+              "query": [
+                {
+                  "key": "apiKey",
+                  "value": "{{SPOONACULAR_API_KEY}}"
+                },
+                {
+                  "key": "includeIngredients",
+                  "value": "chicken,rice"
+                },
+                {
+                  "key": "number",
+                  "value": "10"
+                },
+                {
+                  "key": "addRecipeInformation",
+                  "value": "true"
+                },
+                {
+                  "key": "addRecipeNutrition",
+                  "value": "true"
+                }
+              ]
+            },
+            "description": "Get 10 recipes that include chicken and rice"
+          },
+          "response": []
+        },
+        {
+          "name": "Search by Diet + Meal Type + Calories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://api.spoonacular.com/recipes/complexSearch?apiKey={{SPOONACULAR_API_KEY}}&diet=vegetarian&type=lunch&maxCalories=700&number=10&addRecipeInformation=true&addRecipeNutrition=true",
+              "protocol": "https",
+              "host": [
+                "api",
+                "spoonacular",
+                "com"
+              ],
+              "path": [
+                "recipes",
+                "complexSearch"
+              ],
+              "query": [
+                {
+                  "key": "apiKey",
+                  "value": "{{SPOONACULAR_API_KEY}}"
+                },
+                {
+                  "key": "diet",
+                  "value": "vegetarian"
+                },
+                {
+                  "key": "type",
+                  "value": "lunch"
+                },
+                {
+                  "key": "maxCalories",
+                  "value": "700"
+                },
+                {
+                  "key": "number",
+                  "value": "10"
+                },
+                {
+                  "key": "addRecipeInformation",
+                  "value": "true"
+                },
+                {
+                  "key": "addRecipeNutrition",
+                  "value": "true"
+                }
+              ]
+            },
+            "description": "Get 10 vegetarian lunch recipes with max 700 calories"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Recipe Details",
+      "item": [
+        {
+          "name": "Get Recipe Information by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://api.spoonacular.com/recipes/{{RECIPE_ID}}/information?apiKey={{SPOONACULAR_API_KEY}}&addRecipeInformation=true",
+              "protocol": "https",
+              "host": [
+                "api",
+                "spoonacular",
+                "com"
+              ],
+              "path": [
+                "recipes",
+                "{{RECIPE_ID}}",
+                "information"
+              ],
+              "query": [
+                {
+                  "key": "apiKey",
+                  "value": "{{SPOONACULAR_API_KEY}}"
+                },
+                {
+                  "key": "addRecipeInformation",
+                  "value": "true"
+                }
+              ]
+            },
+            "description": "Get detailed information about a specific recipe (replace {{RECIPE_ID}} with actual recipe ID, e.g., 715495)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Recipe Nutrition by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://api.spoonacular.com/recipes/{{RECIPE_ID}}/nutritionWidget.json?apiKey={{SPOONACULAR_API_KEY}}",
+              "protocol": "https",
+              "host": [
+                "api",
+                "spoonacular",
+                "com"
+              ],
+              "path": [
+                "recipes",
+                "{{RECIPE_ID}}",
+                "nutritionWidget.json"
+              ],
+              "query": [
+                {
+                  "key": "apiKey",
+                  "value": "{{SPOONACULAR_API_KEY}}"
+                }
+              ]
+            },
+            "description": "Get nutrition widget data for a specific recipe"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Ingredients Search",
+      "item": [
+        {
+          "name": "Search Ingredients by Name",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://api.spoonacular.com/food/ingredients/search?apiKey={{SPOONACULAR_API_KEY}}&query=chicken&number=10",
+              "protocol": "https",
+              "host": [
+                "api",
+                "spoonacular",
+                "com"
+              ],
+              "path": [
+                "food",
+                "ingredients",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "apiKey",
+                  "value": "{{SPOONACULAR_API_KEY}}"
+                },
+                {
+                  "key": "query",
+                  "value": "chicken"
+                },
+                {
+                  "key": "number",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Search for ingredients by name"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "SPOONACULAR_API_KEY",
+      "value": "YOUR_API_KEY_HERE",
+      "type": "string"
+    },
+    {
+      "key": "RECIPE_ID",
+      "value": "715495",
+      "type": "string"
+    }
+  ]
+}

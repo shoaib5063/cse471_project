@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { calculateCalorieGoal } from '../lib/calculations';
 import { generateMealPlanFromAPI, getMealOptions, transformRecipe } from '../lib/services/recipeService';
+import { generateGroceryList } from '../lib/services/groceryService';
 import axios from 'axios';
 
 export default function MealPlansPage() {
@@ -29,6 +30,7 @@ export default function MealPlansPage() {
   const [activeDay, setActiveDay] = useState(null);
   const [activeMealType, setActiveMealType] = useState(null);
   const [showShoppingList, setShowShoppingList] = useState(false);
+  const [smartShopping, setSmartShopping] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState(null);
   const [mealOptions, setMealOptions] = useState([]);
@@ -142,6 +144,22 @@ export default function MealPlansPage() {
       .map(([ingredient, count]) => ({ ingredient, count }))
       .sort((a, b) => a.ingredient.localeCompare(b.ingredient));
   };
+  
+  useEffect(() => {
+    const run = async () => {
+      if (mealPlan.length === 0) {
+        setSmartShopping(null);
+        return;
+      }
+      try {
+        const data = await generateGroceryList(mealPlan);
+        setSmartShopping(data?.categories || null);
+      } catch (e) {
+        setSmartShopping(null);
+      }
+    };
+    run();
+  }, [mealPlan]);
 
   const getWeeklyNutrition = () => {
     const totals = { calories: 0, protein: 0, carbs: 0, fats: 0 };
@@ -354,15 +372,34 @@ export default function MealPlansPage() {
             {showShoppingList && (
               <div className="mb-6 p-4 bg-blue-50 rounded-lg">
                 <h3 className="font-semibold text-gray-900 mb-3">Shopping List</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                  {shoppingList.map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-2 text-sm">
-                      <CheckCircle className="h-4 w-4 text-green-600" />
-                      <span>{item.ingredient}</span>
-                      {item.count > 1 && <span className="text-gray-500">({item.count}x)</span>}
-                    </div>
-                  ))}
-                </div>
+                {smartShopping ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {Object.entries(smartShopping).map(([category, items]) => (
+                      <div key={category} className="bg-white border border-gray-200 rounded p-3">
+                        <p className="text-sm font-semibold text-gray-800 mb-2 capitalize">{category}</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          {items.map((it, idx) => (
+                            <div key={idx} className="flex items-center gap-2 text-sm">
+                              <CheckCircle className="h-4 w-4 text-green-600" />
+                              <span>{it.name}</span>
+                              {it.count > 1 && <span className="text-gray-500">({it.count}x)</span>}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                    {shoppingList.map((item, idx) => (
+                      <div key={idx} className="flex items-center gap-2 text-sm">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <span>{item.ingredient}</span>
+                        {item.count > 1 && <span className="text-gray-500">({item.count}x)</span>}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 

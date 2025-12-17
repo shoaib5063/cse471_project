@@ -20,7 +20,9 @@ import {
   ChevronRight,
   Calendar,
   Trash2,
-  X
+  X,
+  Trophy,
+  TrendingUp
 } from 'lucide-react';
 import axios from 'axios';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
@@ -62,6 +64,7 @@ export default function DashboardPage() {
     { id: 'overview', label: 'Overview', icon: LayoutGrid },
     { id: 'meal-tracking', label: 'Meal Tracking', icon: ClipboardList, to: '/dashboard/meal-tracking' },
     { id: 'meal-plans', label: 'Meal Plans', icon: Utensils, to: '/dashboard/meal-plans' },
+    { id: 'challenges', label: 'Weekly Challenges', icon: Trophy, to: '/dashboard/challenges' },
     { id: 'recipe-lab', label: 'Recipe Lab', icon: ChefHat, to: '/dashboard/recipe-lab' },
     { id: 'health-tips', label: 'Health Tips', icon: Lightbulb, to: '/dashboard/health-tips' },
     { id: 'questions', label: 'Health Q&A', icon: MessageSquare, to: '/dashboard/questions' },
