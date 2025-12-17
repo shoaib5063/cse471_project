@@ -229,6 +229,63 @@ const updateMeal = async (req, res) => {
   }
 };
 
+// Get nutrient trends
+const getNutrientTrends = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { days = 7 } = req.query;
+
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - parseInt(days));
+
+    // Ensure we capture the full day for start and end
+    startDate.setHours(0, 0, 0, 0);
+    endDate.setHours(23, 59, 59, 999);
+
+    const meals = await Meal.find({
+      userId,
+      date: { $gte: startDate, $lte: endDate }
+    }).sort({ date: 1 });
+
+    // Group by date
+    const dailyStats = {};
+    
+    // Initialize all days in range to 0
+    const tempDate = new Date(startDate);
+    while (tempDate <= endDate) {
+      const dateStr = tempDate.toISOString().split('T')[0];
+      dailyStats[dateStr] = {
+        date: dateStr,
+        calories: 0,
+        protein: 0,
+        carbs: 0,
+        fat: 0,
+        fiber: 0,
+        sugar: 0
+      };
+      tempDate.setDate(tempDate.getDate() + 1);
+    }
+
+    meals.forEach(meal => {
+      const dateStr = new Date(meal.date).toISOString().split('T')[0];
+      if (dailyStats[dateStr]) {
+        dailyStats[dateStr].calories += Math.round(meal.nutrition.calories || 0);
+        dailyStats[dateStr].protein += Math.round(meal.nutrition.protein || 0);
+        dailyStats[dateStr].carbs += Math.round(meal.nutrition.carbs || 0);
+        dailyStats[dateStr].fat += Math.round(meal.nutrition.fat || 0);
+        dailyStats[dateStr].fiber += Math.round(meal.nutrition.fiber || 0);
+        dailyStats[dateStr].sugar += Math.round(meal.nutrition.sugar || 0);
+      }
+    });
+
+    res.json(Object.values(dailyStats));
+  } catch (error) {
+    console.error('Error fetching nutrient trends:', error);
+    res.status(500).json({ error: 'Failed to fetch nutrient trends' });
+  }
+};
+
 module.exports = {
   searchFood,
   getFoodDetails,
@@ -236,5 +293,6 @@ module.exports = {
   getUserMeals,
   getDailySummary,
   deleteMeal,
-  updateMeal
+  updateMeal,
+  getNutrientTrends
 };

@@ -21,6 +21,8 @@ app.use(express.json());
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/meals', require('./routes/meals'));
+app.use('/api/grocery', require('./routes/grocery'));
+app.use('/api/challenges', require('./routes/challenges'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/health', require('./routes/health'));
 

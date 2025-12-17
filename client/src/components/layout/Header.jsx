@@ -45,6 +45,12 @@ export default function Header() {
                   Health
                 </Link>
                 <Link
+                  to="/dashboard/challenges"
+                  className="text-gray-700 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium"
+                >
+                  Challenges
+                </Link>
+                <Link
                   to="/mood-patterns"
                   className="text-gray-700 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium"
                 >

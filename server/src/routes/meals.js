@@ -7,12 +7,16 @@ const {
   getUserMeals,
   getDailySummary,
   deleteMeal,
-  updateMeal
+  updateMeal,
+  getNutrientTrends
 } = require('../controllers/mealController');
 
 
 // USDA Food Search - NEW feature for your meal logging
 router.get('/search', searchFood);
+
+// Get nutrient trends
+router.get('/trends/:userId', getNutrientTrends);
 
 // Get all meals with query param - for compatibility
 router.get('/', async (req, res) => {

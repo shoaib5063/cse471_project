@@ -11,6 +11,7 @@ import {
   ClipboardList,
   ChefHat,
   Lightbulb,
+  Trophy,
 } from 'lucide-react';
 import axios from 'axios';
 
@@ -23,6 +24,7 @@ export default function DashboardPage() {
     { id: 'overview', label: 'Overview', icon: LayoutGrid },
     { id: 'meal-tracking', label: 'Meal Tracking', icon: ClipboardList, to: '/dashboard/meal-tracking' },
     { id: 'meal-plans', label: 'Meal Plans', icon: Utensils, to: '/dashboard/meal-plans' },
+    { id: 'challenges', label: 'Weekly Challenges', icon: Trophy, to: '/dashboard/challenges' },
     { id: 'recipe-lab', label: 'Recipe Lab', icon: ChefHat, to: '/dashboard/recipe-lab' },
     { id: 'health-tips', label: 'Health Tips', icon: Lightbulb, to: '/dashboard/health-tips' },
   ];
@@ -134,6 +136,23 @@ export default function DashboardPage() {
                   className="inline-flex items-center mt-3 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
                 >
                   Open Meal Plans
+                </Link>
+              </div>
+
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center justify-between mb-2">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">Nutrient Trends</h3>
+                    <p className="text-sm text-gray-600">Analyze intake patterns.</p>
+                  </div>
+                  <TrendingUp className="h-5 w-5 text-green-600" />
+                </div>
+                <p className="text-sm text-gray-700">Visualize your calorie and macro history.</p>
+                <Link
+                  to="/dashboard/trends"
+                  className="inline-flex items-center mt-3 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                >
+                  View Trends
                 </Link>
               </div>
 
