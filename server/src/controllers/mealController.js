@@ -1,6 +1,9 @@
 const axios = require('axios');
 const Meal = require('../models/Meal');
 const Hydration = require('../models/Hydration');
+const { analyzeImage, formatFoodResponse } = require('../services/fatsecretService');
+const { getLabels } = require('../services/visionService');
+const { describeMealImage, getFoodsFromDescription } = require('../services/geminiImageService');
 
 // Search food using USDA API
 const searchFood = async (req, res) => {
@@ -324,6 +327,176 @@ const getNutrientTrends = async (req, res) => {
   }
 };
 
+// Analyze food image using Gemini Vision + USDA API
+const analyzeImageForFood = async (req, res) => {
+  try {
+    const { imageBase64 } = req.body;
+
+    if (!imageBase64) {
+      return res.status(400).json({ error: 'Please provide an image in base64 format' });
+    }
+
+    console.log('Received image upload, base64 length:', imageBase64.length);
+
+    // Remove data URI prefix if present
+    const cleanedImageBase64 = imageBase64.replace(/^data:image\/[^;]+;base64,/, '');
+    console.log('Cleaned image base64 length:', cleanedImageBase64.length);
+
+    // PRIMARY: Try Gemini image description first
+    let foods = [];
+    try {
+      console.log('Step 1: Using Gemini to describe the meal...');
+      const description = await describeMealImage(cleanedImageBase64);
+      console.log('Step 2: Extracting foods from Gemini description...');
+      foods = await getFoodsFromDescription(description);
+      
+      if (foods.length > 0) {
+        console.log('✅ Gemini analysis successful! Found', foods.length, 'foods');
+        // Format foods for frontend consumption
+        const formatted = foods.map(f => ({
+          fdcId: f.fdcId,
+          food_entry_name: f.description,
+          food_name: f.description,
+          food_type: 'USDA',
+          eaten: {
+            food_name_singular: f.description,
+            food_name_plural: f.description,
+            units: 1,
+            metric_description: f.servingSizeUnit || 'g',
+            total_metric_amount: f.servingSize || 100,
+            per_unit_metric_amount: f.servingSize || 100,
+            total_nutritional_content: {
+              calories: f.nutrients.calories || 0,
+              carbohydrate: f.nutrients.carbs || 0,
+              protein: f.nutrients.protein || 0,
+              fat: f.nutrients.fat || 0,
+              fiber: f.nutrients.fiber || 0,
+              sugar: f.nutrients.sugar || 0
+            }
+          }
+        }));
+        
+        console.log('📤 Returning', formatted.length, 'foods via Gemini');
+        return res.json({
+          success: true,
+          foods: formatted,
+          source: 'gemini',
+          description: description.substring(0, 200)
+        });
+      } else {
+        console.log('⚠️ Gemini found no foods, moving to fallback...');
+      }
+    } catch (err) {
+      console.error('❌ Gemini analysis error:', err.message || err);
+    }
+
+    // FALLBACK: Try FatSecret
+    console.log('Step 3: Falling back to FatSecret API...');
+    try {
+      const fatsecretResponse = await analyzeImage(cleanedImageBase64);
+      const formattedFoods = formatFoodResponse(fatsecretResponse);
+      
+      if (formattedFoods && formattedFoods.length > 0) {
+        console.log('✅ FatSecret analysis successful! Found', formattedFoods.length, 'foods');
+        return res.json({
+          success: true,
+          foods: formattedFoods,
+          source: 'fatsecret'
+        });
+      }
+    } catch (err) {
+      console.warn('⚠️ FatSecret analysis failed:', err.message || err);
+    }
+
+    // LAST RESORT: Return suggestions from existing meals
+    console.log('Step 4: Returning popular meals as suggestions...');
+    let suggestions = [];
+    try {
+      const agg = await Meal.aggregate([
+        { $unwind: '$foodItems' },
+        { $group: { 
+            _id: '$foodItems.description', 
+            count: { $sum: 1 }, 
+            sample: { $first: '$foodItems' },
+            avgNutrition: { 
+              $avg: { 
+                calories: '$nutrition.calories',
+                protein: '$nutrition.protein',
+                carbs: '$nutrition.carbs',
+                fat: '$nutrition.fat',
+                fiber: '$nutrition.fiber',
+                sugar: '$nutrition.sugar'
+              }
+            }
+          } 
+        },
+        { $sort: { count: -1 } },
+        { $limit: 6 }
+      ]).allowDiskUse(true);
+
+      const rawSuggestions = agg.map(a => ({
+        description: a._id,
+        fdcId: a.sample?.fdcId || null,
+        servingSize: a.sample?.servingSize || 100,
+        servingSizeUnit: a.sample?.servingSizeUnit || 'g',
+        avgNutrition: a.avgNutrition || {}
+      }));
+
+      const enriched = await Promise.all(rawSuggestions.map(async s => {
+        try {
+          if (s.avgNutrition && s.avgNutrition.calories && s.avgNutrition.calories > 0) {
+            console.log('Using meal nutrition for suggestion:', s.description, s.avgNutrition.calories);
+            return {
+              description: s.description,
+              fdcId: s.fdcId,
+              servingSize: s.servingSize,
+              servingSizeUnit: s.servingSizeUnit,
+              nutrients: {
+                calories: Math.round(s.avgNutrition.calories || 0),
+                protein: Math.round(s.avgNutrition.protein || 0),
+                carbs: Math.round(s.avgNutrition.carbs || 0),
+                fat: Math.round(s.avgNutrition.fat || 0),
+                fiber: Math.round(s.avgNutrition.fiber || 0),
+                sugar: Math.round(s.avgNutrition.sugar || 0)
+              }
+            };
+          }
+        } catch (err) {
+          console.warn('Failed to enrich suggestion', s.description, err.message || err);
+        }
+        return {
+          description: s.description,
+          fdcId: s.fdcId || null,
+          servingSize: s.servingSize,
+          servingSizeUnit: s.servingSizeUnit,
+          nutrients: { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, sugar: 0 }
+        };
+      }));
+
+      suggestions = enriched;
+    } catch (err) {
+      console.warn('Failed to aggregate meal suggestions:', err.message || err);
+    }
+
+    return res.json({
+      success: true,
+      foods: [],
+      suggestions: suggestions,
+      source: 'suggestions',
+      message: 'Could not automatically detect meal. Using suggestions from your meal history.'
+    });
+  } catch (error) {
+    console.error('Error analyzing image for food:', {
+      message: error.message,
+      stack: error.stack
+    });
+    res.status(500).json({
+      error: error.message || 'Failed to analyze food image',
+      details: error.response?.data || null
+    });
+  }
+};
+
 module.exports = {
   searchFood,
   getFoodDetails,
@@ -332,5 +505,6 @@ module.exports = {
   getDailySummary,
   deleteMeal,
   updateMeal,
-  getNutrientTrends
+  getNutrientTrends,
+  analyzeImageForFood
 };

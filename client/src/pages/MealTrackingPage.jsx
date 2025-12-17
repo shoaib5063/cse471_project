@@ -4,7 +4,8 @@ import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import MoodTracker from '../components/MoodTracker';
-import { Plus, Search, X, Calendar, ChevronDown, ChevronUp } from 'lucide-react';
+import ImageFoodAnalyzer from '../components/ImageFoodAnalyzer';
+import { Plus, Search, X, Calendar, ChevronDown, ChevronUp, Camera } from 'lucide-react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -13,6 +14,7 @@ export default function MealTrackingPage() {
   const navigate = useNavigate();
   const [meals, setMeals] = useState([]);
   const [showAddMeal, setShowAddMeal] = useState(false);
+  const [showImageAnalyzer, setShowImageAnalyzer] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [searching, setSearching] = useState(false);
@@ -136,6 +138,31 @@ export default function MealTrackingPage() {
       carbs: Math.round(totalNutrition.carbs).toString(),
       fats: Math.round(totalNutrition.fat).toString(),
     });
+  };
+
+  const handleFoodsFromImage = (foods) => {
+    setSelectedFoods([...selectedFoods, ...foods]);
+
+    // Calculate total nutrition
+    const totalNutrition = [...selectedFoods, ...foods].reduce((acc, f) => {
+      const multiplier = f.quantity || 1;
+      return {
+        calories: acc.calories + (f.nutrients.calories * multiplier),
+        protein: acc.protein + (f.nutrients.protein * multiplier),
+        carbs: acc.carbs + (f.nutrients.carbs * multiplier),
+        fat: acc.fat + (f.nutrients.fat * multiplier),
+      };
+    }, { calories: 0, protein: 0, carbs: 0, fat: 0 });
+
+    setNewMeal({
+      ...newMeal,
+      calories: Math.round(totalNutrition.calories).toString(),
+      protein: Math.round(totalNutrition.protein).toString(),
+      carbs: Math.round(totalNutrition.carbs).toString(),
+      fats: Math.round(totalNutrition.fat).toString(),
+    });
+
+    setShowImageAnalyzer(false);
   };
 
   const handleMoodChange = (field, value) => {
@@ -306,45 +333,71 @@ export default function MealTrackingPage() {
 
                   {/* Food Search */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Add Foods (USDS Database)</label>
-                    <div className="relative">
-                      <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                      <input
-                        type="text"
-                        placeholder="Search for foods..."
-                        value={searchQuery}
-                        onChange={handleSearchChange}
-                        className="w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 shadow-sm"
-                      />
-
-                      {searching && (
-                        <div className="absolute right-3 top-3">
-                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-green-600"></div>
+                    <label className="block text-sm font-medium text-gray-700 mb-3">Add Foods to Meal</label>
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setShowImageAnalyzer(true)}
+                          className="flex items-center justify-center px-4 py-2.5 bg-blue-50 border-2 border-blue-300 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors font-medium"
+                        >
+                          <Camera className="h-5 w-5 mr-2" />
+                          Analyze Image
+                        </button>
+                        <div className="text-sm text-gray-500 flex items-center">
+                          or search database below
                         </div>
-                      )}
+                      </div>
+                      
+                      <div className="relative">
+                        <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                        <input
+                          type="text"
+                          placeholder="Search for foods..."
+                          value={searchQuery}
+                          onChange={handleSearchChange}
+                          className="w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 shadow-sm"
+                        />
 
-                      {searchResults.length > 0 && (
-                        <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto">
-                          {searchResults.map((food) => (
-                            <button
-                              key={food.fdcId}
-                              type="button"
-                              onClick={() => addFoodToMeal(food)}
-                              className="w-full text-left px-4 py-3 hover:bg-green-50 border-b border-gray-100 last:border-0 transition-colors"
-                            >
-                              <div className="flex justify-between items-center">
-                                <div>
-                                  <p className="font-medium text-gray-900">{food.description}</p>
-                                  <p className="text-xs text-gray-500">{food.brandName} • {food.servingSize}{food.servingSizeUnit}</p>
+                        {searching && (
+                          <div className="absolute right-3 top-3">
+                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-green-600"></div>
+                          </div>
+                        )}
+
+                        {searchResults.length > 0 && (
+                          <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                            {searchResults.map((food) => (
+                              <button
+                                key={food.fdcId}
+                                type="button"
+                                onClick={() => addFoodToMeal(food)}
+                                className="w-full text-left px-4 py-3 hover:bg-green-50 border-b border-gray-100 last:border-0 transition-colors"
+                              >
+                                <div className="flex justify-between items-center">
+                                  <div>
+                                    <p className="font-medium text-gray-900">{food.description}</p>
+                                    <p className="text-xs text-gray-500">{food.brandName} • {food.servingSize}{food.servingSizeUnit}</p>
+                                  </div>
+                                  <span className="text-sm font-semibold text-green-600">{food.nutrients.calories} cal</span>
                                 </div>
-                                <span className="text-sm font-semibold text-green-600">{food.nutrients.calories} cal</span>
-                              </div>
-                            </button>
-                          ))}
-                        </div>
-                      )}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
+
+                  {/* Image Food Analyzer */}
+                  {showImageAnalyzer && (
+                    <div className="border-t border-gray-200 pt-6">
+                      <ImageFoodAnalyzer 
+                        onFoodsDetected={handleFoodsFromImage}
+                        onClose={() => setShowImageAnalyzer(false)}
+                      />
+                    </div>
+                  )}
 
                   {/* Selected Foods List */}
                   {selectedFoods.length > 0 && (
