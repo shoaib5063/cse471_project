@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { detectIntent } = require('../services/dialogflowService');
+const { generateResponse } = require('../services/geminiService');
 
 /**
  * POST /api/chatbot/message
@@ -8,24 +8,25 @@ const { detectIntent } = require('../services/dialogflowService');
  */
 router.post('/message', async (req, res) => {
     try {
-        const { message, sessionId } = req.body;
+        const { message, history } = req.body;
 
         if (!message || message.trim() === '') {
             return res.status(400).json({ error: 'Message is required' });
         }
 
-        const response = await detectIntent(message, sessionId);
+        const botResponse = await generateResponse(message, history || []);
 
         res.json({
             userMessage: message,
-            botResponse: response.fulfillmentText,
-            intent: response.intent,
-            confidence: response.confidence,
-            sessionId: response.sessionId,
+            botResponse: botResponse,
+            // Gemini doesn't strictly have intents/confidence like Dialogflow, 
+            // but we can return dummy values if frontend expects them
+            intent: 'generative_response',
+            confidence: 1.0,
         });
     } catch (error) {
         console.error('Chatbot error:', error.message);
-        console.error('Full error:', JSON.stringify(error, null, 2));
+        console.error('Full error details:', error);
         res.status(500).json({
             error: 'Failed to get response from chatbot',
             details: error.message,

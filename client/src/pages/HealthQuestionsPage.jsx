@@ -36,19 +36,29 @@ export default function HealthQuestionsPage() {
 
         const userMessage = input.trim();
         setInput('');
-        setMessages((prev) => [...prev, { type: 'user', text: userMessage }]);
+
+        // Optimistically update UI
+        const newMessages = [...messages, { type: 'user', text: userMessage }];
+        setMessages(newMessages);
         setSending(true);
 
         try {
+            // Prepare history for backend (exclude the latest user message which is sent separately)
+            // Map frontend message format to what backend expects if needed, 
+            // but here we just pass the raw array and let backend handle roles.
+            const history = messages.map(m => ({
+                role: m.type, // 'bot' or 'user'
+                text: m.text
+            }));
+
             const response = await axios.post(
                 `${import.meta.env.VITE_API_URL}/api/chatbot/message`,
                 {
                     message: userMessage,
-                    sessionId: sessionId,
+                    history: history,
                 }
             );
 
-            setSessionId(response.data.sessionId);
             setMessages((prev) => [
                 ...prev,
                 { type: 'bot', text: response.data.botResponse },
@@ -99,8 +109,8 @@ export default function HealthQuestionsPage() {
                             >
                                 <div
                                     className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${msg.type === 'user'
-                                            ? 'bg-green-600 text-white'
-                                            : 'bg-blue-600 text-white'
+                                        ? 'bg-green-600 text-white'
+                                        : 'bg-blue-600 text-white'
                                         }`}
                                 >
                                     {msg.type === 'user' ? (
@@ -111,8 +121,8 @@ export default function HealthQuestionsPage() {
                                 </div>
                                 <div
                                     className={`max-w-[75%] px-4 py-3 rounded-2xl ${msg.type === 'user'
-                                            ? 'bg-green-600 text-white rounded-tr-none'
-                                            : 'bg-gray-100 text-gray-900 rounded-tl-none'
+                                        ? 'bg-green-600 text-white rounded-tr-none'
+                                        : 'bg-gray-100 text-gray-900 rounded-tl-none'
                                         }`}
                                 >
                                     <p className="text-sm whitespace-pre-wrap">{msg.text}</p>

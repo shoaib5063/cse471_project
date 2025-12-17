@@ -27,6 +27,8 @@ app.use('/api/reminders', require('./routes/reminders'));
 app.use('/api/hydration', require('./routes/hydration'));
 app.use('/api/questions', require('./routes/questions'));
 app.use('/api/chatbot', require('./routes/chatbot'));
+app.use('/api/health', require('./routes/health'));
+
 
 // Health check
 app.get('/api/health', (req, res) => {

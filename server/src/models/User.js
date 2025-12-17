@@ -15,13 +15,21 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  dailyCalorieGoal: {
+    type: Number,
+    default: 2000
+  },
+  dailyHydrationGoal: {
+    type: Number,
+    default: 2000
+  },
   // Health Form Data
   healthProfile: {
     age: { type: Number, min: 0 },
-    gender: { 
-      type: String, 
+    gender: {
+      type: String,
       enum: ['male', 'female', 'other', null],
-      default: null 
+      default: null
     },
     height: { type: Number, min: 0 }, // in cm
     weight: { type: Number, min: 0 }, // in kg
@@ -72,7 +80,7 @@ const userSchema = new mongoose.Schema({
 });
 
 // Update the updatedAt timestamp before saving
-userSchema.pre('save', function(next) {
+userSchema.pre('save', function (next) {
   this.updatedAt = Date.now();
   next();
 });

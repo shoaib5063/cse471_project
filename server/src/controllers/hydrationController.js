@@ -54,7 +54,49 @@ const getDailyHydration = async (req, res) => {
     }
 };
 
+// Update hydration
+const updateHydration = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { amount } = req.body;
+
+        const hydration = await Hydration.findByIdAndUpdate(
+            id,
+            { amount },
+            { new: true }
+        );
+
+        if (!hydration) {
+            return res.status(404).json({ error: 'Hydration log not found' });
+        }
+
+        res.json({ message: 'Hydration updated', hydration });
+    } catch (error) {
+        console.error('Error updating hydration:', error);
+        res.status(500).json({ error: 'Failed to update hydration' });
+    }
+};
+
+// Delete hydration
+const deleteHydration = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const hydration = await Hydration.findByIdAndDelete(id);
+
+        if (!hydration) {
+            return res.status(404).json({ error: 'Hydration log not found' });
+        }
+
+        res.json({ message: 'Hydration deleted' });
+    } catch (error) {
+        console.error('Error deleting hydration:', error);
+        res.status(500).json({ error: 'Failed to delete hydration' });
+    }
+};
+
 module.exports = {
     logHydration,
-    getDailyHydration
+    getDailyHydration,
+    updateHydration,
+    deleteHydration
 };

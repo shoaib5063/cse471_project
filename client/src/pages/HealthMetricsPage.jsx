@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/layout/Header';
@@ -84,18 +85,41 @@ export default function HealthMetricsPage() {
   useEffect(() => {
     if (userProfile) {
       const heightInMeters = userProfile.height / 100;
-      const bmi = userProfile.weight && userProfile.height 
+      const bmi = userProfile.weight && userProfile.height
         ? (userProfile.weight / (heightInMeters * heightInMeters)).toFixed(1)
         : 0;
       const calorieGoal = calculateCalorieGoal(userProfile);
-      setMetrics(prev => ({ 
-        ...prev, 
-        weight: userProfile.weight || 0, 
+      setMetrics(prev => ({
+        ...prev,
+        weight: userProfile.weight || 0,
         bmi,
-        calorieGoal 
+        calorieGoal
       }));
     }
   }, [userProfile]);
+
+  // Fetch today's hydration data
+  useEffect(() => {
+    const fetchHydration = async () => {
+      if (!user) return;
+      try {
+        // Get today's date in local time
+        const today = new Date();
+        const dateString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/hydration/${user.uid}?date=${dateString}`
+        );
+        // API returns totalAmount in ml, convert to liters for display
+        const totalMl = response.data.totalAmount || 0;
+        const totalLiters = (totalMl / 1000).toFixed(1);
+        setMetrics(prev => ({ ...prev, waterIntake: totalLiters }));
+      } catch (error) {
+        console.error('Error fetching hydration:', error);
+      }
+    };
+    fetchHydration();
+  }, [user]);
 
   const calculateBMI = (weight, height) => {
     if (!weight || !height || weight <= 0 || height <= 0) {
@@ -136,7 +160,7 @@ export default function HealthMetricsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      
+
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Health Metrics</h1>
