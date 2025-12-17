@@ -9,6 +9,7 @@ export default function ImageFoodAnalyzer({ onFoodsDetected, onClose }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [detectedFoods, setDetectedFoods] = useState([]);
+  const [selectedFoodIndices, setSelectedFoodIndices] = useState(new Set());
   const [showSearchUI, setShowSearchUI] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -64,6 +65,8 @@ export default function ImageFoodAnalyzer({ onFoodsDetected, onClose }) {
 
           if (response.data.success && Array.isArray(response.data.foods) && response.data.foods.length > 0) {
             setDetectedFoods(response.data.foods);
+            // Auto-select all detected foods
+            setSelectedFoodIndices(new Set(response.data.foods.map((_, idx) => idx)));
             setShowSearchUI(false);
           } else if (response.data.success && Array.isArray(response.data.foods) && response.data.foods.length === 0) {
             // No automatic detection — check server-provided candidates and auto-pick first
@@ -183,38 +186,54 @@ export default function ImageFoodAnalyzer({ onFoodsDetected, onClose }) {
     onClose();
   };
 
-  const handleAddFood = (food) => {
-    const selectedServing = food.suggested_serving;
-    const nutrition = food.eaten.total_nutritional_content;
+  const toggleFoodSelection = (index) => {
+    const newSelected = new Set(selectedFoodIndices);
+    if (newSelected.has(index)) {
+      newSelected.delete(index);
+    } else {
+      newSelected.add(index);
+    }
+    setSelectedFoodIndices(newSelected);
+  };
 
-    const formattedFood = {
-      fatsecretFoodId: food.food_id,
-      foodName: food.food_entry_name,
-      description: food.food_entry_name,
-      quantity: 1,
-      servingSize: selectedServing?.metric_measure_amount || 100,
-      servingSizeUnit: selectedServing?.metric_serving_description || 'g',
-      servingDescription: selectedServing?.serving_description || '1 serving',
-      nutrients: {
-        calories: nutrition.calories || 0,
-        protein: nutrition.protein || 0,
-        carbs: nutrition.carbohydrate || 0,
-        fat: nutrition.fat || 0,
-        fiber: nutrition.fiber || 0,
-        sugar: nutrition.sugar || 0,
-        saturated_fat: nutrition.saturated_fat || 0,
-        cholesterol: nutrition.cholesterol || 0,
-        sodium: nutrition.sodium || 0,
-        potassium: nutrition.potassium || 0,
-        vitamin_a: nutrition.vitamin_a || 0,
-        vitamin_c: nutrition.vitamin_c || 0,
-        calcium: nutrition.calcium || 0,
-        iron: nutrition.iron || 0
-      }
-    };
+  const handleAddSelectedFoods = () => {
+    const selectedFoods = detectedFoods
+      .filter((_, index) => selectedFoodIndices.has(index))
+      .map(food => {
+        const selectedServing = food.suggested_serving;
+        const nutrition = food.eaten.total_nutritional_content;
 
-    onFoodsDetected([formattedFood]);
-    onClose();
+        return {
+          fatsecretFoodId: food.food_id,
+          foodName: food.food_entry_name,
+          description: food.food_entry_name,
+          quantity: 1,
+          servingSize: selectedServing?.metric_measure_amount || 100,
+          servingSizeUnit: selectedServing?.metric_serving_description || 'g',
+          servingDescription: selectedServing?.serving_description || '1 serving',
+          nutrients: {
+            calories: nutrition.calories || 0,
+            protein: nutrition.protein || 0,
+            carbs: nutrition.carbohydrate || 0,
+            fat: nutrition.fat || 0,
+            fiber: nutrition.fiber || 0,
+            sugar: nutrition.sugar || 0,
+            saturated_fat: nutrition.saturated_fat || 0,
+            cholesterol: nutrition.cholesterol || 0,
+            sodium: nutrition.sodium || 0,
+            potassium: nutrition.potassium || 0,
+            vitamin_a: nutrition.vitamin_a || 0,
+            vitamin_c: nutrition.vitamin_c || 0,
+            calcium: nutrition.calcium || 0,
+            iron: nutrition.iron || 0
+          }
+        };
+      });
+
+    if (selectedFoods.length > 0) {
+      onFoodsDetected(selectedFoods);
+      onClose();
+    }
   };
 
   return (
@@ -306,65 +325,98 @@ export default function ImageFoodAnalyzer({ onFoodsDetected, onClose }) {
           {/* Detected Foods */}
           {detectedFoods.length > 0 && (
             <div className="space-y-3">
-              <p className="text-sm font-medium text-gray-700">
-                Detected Foods ({detectedFoods.length})
-              </p>
+              <div className="flex justify-between items-center">
+                <p className="text-sm font-medium text-gray-700">
+                  Detected Foods ({selectedFoodIndices.size} of {detectedFoods.length} selected)
+                </p>
+                <button
+                  onClick={() => {
+                    if (selectedFoodIndices.size === detectedFoods.length) {
+                      setSelectedFoodIndices(new Set());
+                    } else {
+                      setSelectedFoodIndices(new Set(detectedFoods.map((_, idx) => idx)));
+                    }
+                  }}
+                  className="text-xs text-green-600 hover:text-green-700 font-medium"
+                >
+                  {selectedFoodIndices.size === detectedFoods.length ? 'Deselect All' : 'Select All'}
+                </button>
+              </div>
               <div className="space-y-2 max-h-96 overflow-y-auto">
                 {detectedFoods.map((food, index) => (
                   <div
                     key={index}
-                    className="bg-gray-50 border border-gray-200 rounded-lg p-4 hover:border-green-500 transition-colors"
+                    onClick={() => toggleFoodSelection(index)}
+                    className={`bg-gray-50 border-2 rounded-lg p-4 cursor-pointer transition-all ${
+                      selectedFoodIndices.has(index)
+                        ? 'border-green-500 bg-green-50'
+                        : 'border-gray-200 hover:border-green-300'
+                    }`}
                   >
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <h4 className="font-semibold text-gray-900">
-                          {food.food_entry_name}
-                        </h4>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {food.eaten.total_metric_amount} {food.eaten.metric_description}
-                        </p>
-                      </div>
-                      <span className="text-sm font-bold text-green-600">
-                        {Math.round(food.eaten.total_nutritional_content.calories)} cal
-                      </span>
-                    </div>
+                    <div className="flex items-start gap-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedFoodIndices.has(index)}
+                        onChange={() => toggleFoodSelection(index)}
+                        className="mt-1 h-5 w-5 text-green-600 rounded focus:ring-green-500"
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                      <div className="flex-1">
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <h4 className="font-semibold text-gray-900">
+                              {food.food_entry_name}
+                            </h4>
+                            <p className="text-xs text-gray-500 mt-1">
+                              {food.eaten.total_metric_amount} {food.eaten.metric_description}
+                            </p>
+                          </div>
+                          <span className="text-sm font-bold text-green-600">
+                            {Math.round(food.eaten.total_nutritional_content.calories)} cal
+                          </span>
+                        </div>
 
-                    <div className="grid grid-cols-2 gap-2 mb-3 text-xs">
-                      <div className="text-gray-600">
-                        <span className="font-medium">Protein:</span> {food.eaten.total_nutritional_content.protein}g
-                      </div>
-                      <div className="text-gray-600">
-                        <span className="font-medium">Carbs:</span> {food.eaten.total_nutritional_content.carbohydrate}g
-                      </div>
-                      <div className="text-gray-600">
-                        <span className="font-medium">Fat:</span> {food.eaten.total_nutritional_content.fat}g
-                      </div>
-                      <div className="text-gray-600">
-                        <span className="font-medium">Fiber:</span> {food.eaten.total_nutritional_content.fiber}g
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          <div className="text-gray-600">
+                            <span className="font-medium">Protein:</span> {food.eaten.total_nutritional_content.protein}g
+                          </div>
+                          <div className="text-gray-600">
+                            <span className="font-medium">Carbs:</span> {food.eaten.total_nutritional_content.carbohydrate}g
+                          </div>
+                          <div className="text-gray-600">
+                            <span className="font-medium">Fat:</span> {food.eaten.total_nutritional_content.fat}g
+                          </div>
+                          <div className="text-gray-600">
+                            <span className="font-medium">Fiber:</span> {food.eaten.total_nutritional_content.fiber}g
+                          </div>
+                        </div>
                       </div>
                     </div>
-
-                    <button
-                      onClick={() => handleAddFood(food)}
-                      className="w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700 transition-colors text-sm font-medium"
-                    >
-                      Add to Meal
-                    </button>
                   </div>
                 ))}
               </div>
 
-              <button
-                onClick={() => {
-                  setDetectedFoods([]);
-                  setSelectedImage(null);
-                  setImagePreview(null);
-                  setError(null);
-                }}
-                className="w-full bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400 transition-colors font-medium"
-              >
-                Analyze Another Image
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleAddSelectedFoods}
+                  disabled={selectedFoodIndices.size === 0}
+                  className="flex-1 bg-green-600 text-white py-2.5 rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-medium"
+                >
+                  Add Selected ({selectedFoodIndices.size})
+                </button>
+                <button
+                  onClick={() => {
+                    setDetectedFoods([]);
+                    setSelectedFoodIndices(new Set());
+                    setSelectedImage(null);
+                    setImagePreview(null);
+                    setError(null);
+                  }}
+                  className="px-4 bg-gray-300 text-gray-700 py-2.5 rounded-lg hover:bg-gray-400 transition-colors font-medium"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           )}
 

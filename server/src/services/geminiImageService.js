@@ -12,8 +12,8 @@ const describeMealImage = async (imageBase64) => {
   try {
     console.log('Starting Gemini image analysis...');
     
-    // Use gemini-pro-vision or gemini-1.5-pro (depending on availability)
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
+    // Use gemini-1.5-flash-latest which supports vision
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
 
     const prompt = `ANALYZE THIS MEAL IMAGE AND LIST EVERY FOOD ITEM YOU SEE.
 
