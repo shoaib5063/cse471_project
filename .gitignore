@@ -1,5 +1,4 @@
 ﻿node_modules/
-.env
 dist/
 build/
 *.log
@@ -10,5 +9,3 @@ build/
 !package-lock.json
 server/mindfulmeals-481419-f132367bedad.json
 
-.env
-server/.env
