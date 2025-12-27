@@ -6,10 +6,15 @@ import RegisterForm from '../components/auth/RegisterForm';
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
+  const [isAdminLogin, setIsAdminLogin] = useState(false);
   const navigate = useNavigate();
 
   const handleSuccess = () => {
     navigate('/dashboard');
+  };
+
+  const handleAdminSuccess = () => {
+    navigate('/admin-dashboard');
   };
 
   return (
@@ -19,25 +24,41 @@ export default function AuthPage() {
         <div className="max-w-md w-full space-y-8">
           <div>
             <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-              {isLogin ? 'Sign in to your account' : 'Create your account'}
+              {isAdminLogin ? 'Admin Login' : isLogin ? 'Sign in to your account' : 'Create your account'}
             </h2>
           </div>
 
           <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-            {isLogin ? (
+            {isAdminLogin ? (
+              <LoginForm onSuccess={handleAdminSuccess} isAdmin={true} />
+            ) : isLogin ? (
               <LoginForm onSuccess={handleSuccess} />
             ) : (
               <RegisterForm onSuccess={handleSuccess} />
             )}
 
-            <div className="mt-6">
+            <div className="mt-6 space-y-3">
+              {!isAdminLogin && (
+                <button
+                  onClick={() => setIsLogin(!isLogin)}
+                  className="w-full text-center text-sm text-green-600 hover:text-green-500"
+                >
+                  {isLogin
+                    ? "Don't have an account? Register"
+                    : 'Already have an account? Login'}
+                </button>
+              )}
+              
               <button
-                onClick={() => setIsLogin(!isLogin)}
-                className="w-full text-center text-sm text-green-600 hover:text-green-500"
+                onClick={() => {
+                  setIsAdminLogin(!isAdminLogin);
+                  if (isAdminLogin) setIsLogin(true);
+                }}
+                className="w-full text-center text-sm text-blue-600 hover:text-blue-500"
               >
-                {isLogin
-                  ? "Don't have an account? Register"
-                  : 'Already have an account? Login'}
+                {isAdminLogin 
+                  ? 'Back to User Login' 
+                  : 'Admin Login'}
               </button>
             </div>
           </div>
