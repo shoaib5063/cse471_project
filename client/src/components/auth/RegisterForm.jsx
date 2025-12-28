@@ -23,11 +23,11 @@ export default function RegisterForm({ onSuccess }) {
     setLoading(true);
 
     const result = await loginWithGoogle();
-    
+
     if (result.success) {
       // Check if user profile exists
       const existingProfile = await getUserProfile(result.user.uid);
-      
+
       // If new user, create profile with Google data
       if (!existingProfile || result.isNewUser) {
         await createUserProfile(result.user.uid, {
@@ -36,12 +36,12 @@ export default function RegisterForm({ onSuccess }) {
           role: 'user',
         });
       }
-      
+
       onSuccess();
     } else {
       setError(result.error);
     }
-    
+
     setLoading(false);
   };
 
@@ -55,22 +55,28 @@ export default function RegisterForm({ onSuccess }) {
     }
 
     setLoading(true);
+    console.log('Starting registration for:', formData.email);
 
     const result = await registerUser(formData.email, formData.password);
-    
+    console.log('Registration result:', result);
+
     if (result.success) {
-      await createUserProfile(result.user.uid, {
+      console.log('Registration successful, creating profile for UID:', result.user.uid);
+      const profileResult = await createUserProfile(result.user.uid, {
         email: formData.email,
         name: formData.name,
         age: parseInt(formData.age),
         gender: formData.gender,
         role: 'user',
       });
+      console.log('Profile creation result:', profileResult);
+
       onSuccess();
     } else {
+      console.error('Registration failed:', result.error);
       setError(result.error);
     }
-    
+
     setLoading(false);
   };
 
