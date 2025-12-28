@@ -1,5 +1,5 @@
-const { generateResponse } = require('./services/geminiService');
 require('dotenv').config();
+const { generateResponse } = require('./services/geminiService');
 
 async function test() {
     console.log("Testing Gemini Service...");

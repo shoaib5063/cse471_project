@@ -37,6 +37,7 @@ function App() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/health-metrics" element={<HealthMetricsPage />} />
           <Route path="/admin" element={<AdminPage />} />
+          <Route path="/admin-dashboard" element={<AdminPage />} />
           <Route path="/health-form" element={<HealthFormPage />} />
           <Route path="/mood-patterns" element={<MoodPatternsPage />} />
           <Route path="/dashboard/questions" element={<HealthQuestionsPage />} />
