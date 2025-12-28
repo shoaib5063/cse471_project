@@ -8,23 +8,29 @@ const axios = require('axios');
 const analyzeMealWithOpenAI = async (imageBase64) => {
   try {
     console.log('Starting OpenAI Vision analysis...');
-    
+
     const openaiApiKey = process.env.OPENAI_API_KEY;
     if (!openaiApiKey) {
       throw new Error('OPENAI_API_KEY not configured');
     }
 
-    const response = await axios.post(
-      'https://api.openai.com/v1/chat/completions',
-      {
-        model: 'gpt-4o-mini',
-        messages: [
+    const maxRetries = 3;
+    let retries = 0;
+    let response;
+
+    while (retries <= maxRetries) {
+      try {
+        response = await axios.post(
+          'https://api.openai.com/v1/chat/completions',
           {
-            role: 'user',
-            content: [
+            model: 'gpt-4o-mini',
+            messages: [
               {
-                type: 'text',
-                text: `Analyze this meal image and list ALL food items you can identify. For each food item, provide:
+                role: 'user',
+                content: [
+                  {
+                    type: 'text',
+                    text: `Analyze this meal image and list ALL food items you can identify. For each food item, provide:
 1. The food name (be specific, e.g., "grilled chicken breast" not just "chicken")
 2. Estimated portion size if visible
 
@@ -35,25 +41,39 @@ Return ONLY a JSON array in this exact format:
 ]
 
 Do not include any other text, explanations, or markdown. Just the JSON array.`
-              },
-              {
-                type: 'image_url',
-                image_url: {
-                  url: `data:image/jpeg;base64,${imageBase64}`
-                }
+                  },
+                  {
+                    type: 'image_url',
+                    image_url: {
+                      url: `data:image/jpeg;base64,${imageBase64}`
+                    }
+                  }
+                ]
               }
-            ]
+            ],
+            max_tokens: 500
+          },
+          {
+            headers: {
+              'Authorization': `Bearer ${openaiApiKey}`,
+              'Content-Type': 'application/json'
+            }
           }
-        ],
-        max_tokens: 500
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${openaiApiKey}`,
-          'Content-Type': 'application/json'
+        );
+        // If successful, break the loop
+        break;
+      } catch (err) {
+        if (err.response && err.response.status === 429 && retries < maxRetries) {
+          retries++;
+          const delay = Math.pow(2, retries) * 1000; // 2s, 4s, 8s
+          console.warn(`OpenAI 429 Rate Limited. Retrying in ${delay}ms... (Attempt ${retries}/${maxRetries})`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        } else {
+          // If not 429 or max retries reached, throw the error
+          throw err;
         }
       }
-    );
+    }
 
     const content = response.data.choices[0]?.message?.content || '';
     console.log('OpenAI Vision response:', content);
@@ -88,7 +108,7 @@ Do not include any other text, explanations, or markdown. Just the JSON array.`
     for (let i = 0; i < Math.min(foods.length, 10); i++) {
       const foodItem = foods[i];
       const foodName = foodItem.name || foodItem;
-      
+
       if (typeof foodName !== 'string' || foodName.length < 2) continue;
 
       console.log(`Searching USDA for: "${foodName}"`);
@@ -103,7 +123,7 @@ Do not include any other text, explanations, or markdown. Just the JSON array.`
         });
 
         const usdaFoods = usdaResponse.data.foods || [];
-        
+
         if (usdaFoods.length === 0) {
           console.warn(`  No USDA match for: ${foodName}`);
           continue;
@@ -111,7 +131,7 @@ Do not include any other text, explanations, or markdown. Just the JSON array.`
 
         const food = usdaFoods[0];
         const key = `${food.fdcId}::${food.description}`;
-        
+
         if (seen.has(key)) {
           console.log('  (Duplicate, skipping)');
           continue;
@@ -120,7 +140,7 @@ Do not include any other text, explanations, or markdown. Just the JSON array.`
 
         const nutrients = food.foodNutrients || [];
         const calories = Math.round(nutrients.find(n => n.nutrientName === 'Energy')?.value || 0);
-        
+
         const mapped = {
           fdcId: food.fdcId,
           description: food.description,

@@ -1,13 +1,13 @@
 const axios = require('axios');
 
-const FATSECRET_CLIENT_ID = process.env.FATSECRET_CLIENT_ID || '03cac925ef114c7ab9b64a9113ddf38e';
-const FATSECRET_CLIENT_SECRET = process.env.FATSECRET_CLIENT_SECRET || '46b80379bdf1417a904e84e064c2e611';
+const FATSECRET_CLIENT_ID = process.env.FATSECRET_CLIENT_ID;
+const FATSECRET_CLIENT_SECRET = process.env.FATSECRET_CLIENT_SECRET;
 const FATSECRET_API_URL = 'https://platform.fatsecret.com/rest/image-recognition/v2';
 
 // Get OAuth token for FatSecret API
 const getAccessToken = async () => {
   try {
-    const response = await axios.post('https://platform.fatsecret.com/rest/oauth2/token', 
+    const response = await axios.post('https://oauth.fatsecret.com/connect/token',
       'grant_type=client_credentials&scope=image-recognition',
       {
         auth: {
@@ -47,7 +47,13 @@ const analyzeImage = async (imageBase64) => {
       timeout: 30000
     });
 
-    console.log('FatSecret response received:', response.data?.food_response?.length || 0, 'foods detected');
+    console.log('FatSecret raw response:', JSON.stringify(response.data, null, 2));
+
+    // Check various possible response structures
+    const foodResponse = response.data?.food_response;
+    const foodsDetected = Array.isArray(foodResponse) ? foodResponse.length : (foodResponse?.food?.length || 0);
+
+    console.log('FatSecret response received:', foodsDetected, 'foods detected');
     return response.data;
   } catch (error) {
     console.error('Error analyzing image with FatSecret:', {

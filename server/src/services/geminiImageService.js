@@ -11,9 +11,9 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const describeMealImage = async (imageBase64) => {
   try {
     console.log('Starting Gemini image analysis...');
-    
-    // Use gemini-1.5-flash-latest which supports vision
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
+
+    // Use gemini-1.5-flash which is the stable model name
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
     const prompt = `ANALYZE THIS MEAL IMAGE AND LIST EVERY FOOD ITEM YOU SEE.
 
@@ -61,7 +61,7 @@ Now analyze the image:`;
 const getFoodsFromDescription = async (description) => {
   try {
     console.log('Raw Gemini description:', description);
-    
+
     // Split description into individual food items (handles newlines and commas)
     let foodLines = description
       .split(/[\n,;]/)
@@ -72,12 +72,12 @@ const getFoodsFromDescription = async (description) => {
     // Remove any lines that are too generic or are instructions
     foodLines = foodLines.filter(line => {
       const lower = line.toLowerCase();
-      return !lower.includes('here') && 
-             !lower.includes('format') &&
-             !lower.includes('list') &&
-             !lower.includes('example') &&
-             !lower.includes('one per') &&
-             line.length > 2;
+      return !lower.includes('here') &&
+        !lower.includes('format') &&
+        !lower.includes('list') &&
+        !lower.includes('example') &&
+        !lower.includes('one per') &&
+        line.length > 2;
     });
 
     console.log('📋 Extracted food lines:', foodLines);
@@ -88,7 +88,7 @@ const getFoodsFromDescription = async (description) => {
     for (let i = 0; i < foodLines.length; i++) {
       const foodLine = foodLines[i];
       console.log(`Processing food ${i + 1}/${foodLines.length}: "${foodLine}"`);
-      
+
       try {
         // Clean up the food line - remove sizes, quantities, descriptors
         let cleanQuery = foodLine
@@ -116,7 +116,7 @@ const getFoodsFromDescription = async (description) => {
 
         const foods = response.data.foods || [];
         console.log(`  Found ${foods.length} USDA matches`);
-        
+
         if (foods.length === 0) {
           console.warn('  ⚠️ No USDA match for:', cleanQuery);
           continue;
@@ -124,7 +124,7 @@ const getFoodsFromDescription = async (description) => {
 
         const food = foods[0];
         const key = `${food.fdcId}::${food.description}`;
-        
+
         // Avoid duplicates
         if (seen.has(key)) {
           console.log('  (Duplicate, skipping)');
@@ -134,7 +134,7 @@ const getFoodsFromDescription = async (description) => {
 
         const nutrients = food.foodNutrients || [];
         const calories = Math.round(nutrients.find(n => n.nutrientName === 'Energy')?.value || 0);
-        
+
         const mapped = {
           fdcId: food.fdcId,
           description: food.description,

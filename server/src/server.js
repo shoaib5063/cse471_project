@@ -2,6 +2,8 @@ const dotenv = require('dotenv');
 // Load environment variables immediately
 dotenv.config();
 
+// Trigger restart for controller logging
+
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');

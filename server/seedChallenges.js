@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const Challenge = require('./src/models/Challenge');
 
-dotenv.config({ path: './server/.env' });
+dotenv.config({ path: './.env' });
 
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('✅ MongoDB connected'))
