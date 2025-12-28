@@ -19,7 +19,7 @@ If you don't know the answer, admit it and suggest where they might find the inf
     `;
 
 const model = genAI.getGenerativeModel({
-    model: "gemini-2.5-flash",
+    model: "gemini-flash-latest",
     systemInstruction: SYSTEM_PROMPT
 });
 
