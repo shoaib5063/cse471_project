@@ -8,12 +8,16 @@ const {
   getDailySummary,
   deleteMeal,
   updateMeal,
-  getNutrientTrends
+  getNutrientTrends,
+  analyzeImageForFood
 } = require('../controllers/mealController');
 
 
 // USDA Food Search - NEW feature for your meal logging
 router.get('/search', searchFood);
+
+// Analyze food image using FatSecret API
+router.post('/analyze-image', analyzeImageForFood);
 
 // Get nutrient trends
 router.get('/trends/:userId', getNutrientTrends);

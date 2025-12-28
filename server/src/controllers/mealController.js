@@ -1,6 +1,10 @@
 const axios = require('axios');
 const Meal = require('../models/Meal');
 const Hydration = require('../models/Hydration');
+const { analyzeImage, formatFoodResponse } = require('../services/fatsecretService');
+const { getLabels } = require('../services/visionService');
+const { describeMealImage, getFoodsFromDescription } = require('../services/geminiImageService');
+const { analyzeMealWithOpenAI } = require('../services/openaiVisionService');
 
 // Search food using USDA API
 const searchFood = async (req, res) => {
@@ -324,6 +328,101 @@ const getNutrientTrends = async (req, res) => {
   }
 };
 
+// Analyze food image using Gemini Vision + USDA API
+const analyzeImageForFood = async (req, res) => {
+  try {
+    const { imageBase64 } = req.body;
+
+    if (!imageBase64) {
+      return res.status(400).json({ error: 'Please provide an image in base64 format' });
+    }
+
+    console.log('Received image upload, base64 length:', imageBase64.length);
+
+    // Remove data URI prefix if present
+    const cleanedImageBase64 = imageBase64.replace(/^data:image\/[^;]+;base64,/, '');
+    console.log('Cleaned image base64 length:', cleanedImageBase64.length);
+
+    // PRIMARY: Try OpenAI Vision API
+    console.log('Step 1: Using OpenAI Vision API for image analysis...');
+    try {
+      const foods = await analyzeMealWithOpenAI(cleanedImageBase64);
+      
+      if (foods && foods.length > 0) {
+        console.log('✅ OpenAI Vision analysis successful! Found', foods.length, 'foods');
+        
+        // Format foods for frontend consumption
+        const formatted = foods.map(f => ({
+          fdcId: f.fdcId,
+          food_entry_name: f.description,
+          food_name: f.description,
+          food_type: 'USDA',
+          eaten: {
+            food_name_singular: f.description,
+            food_name_plural: f.description,
+            units: 1,
+            metric_description: f.servingSizeUnit || 'g',
+            total_metric_amount: f.servingSize || 100,
+            per_unit_metric_amount: f.servingSize || 100,
+            total_nutritional_content: {
+              calories: f.nutrients.calories || 0,
+              carbohydrate: f.nutrients.carbs || 0,
+              protein: f.nutrients.protein || 0,
+              fat: f.nutrients.fat || 0,
+              fiber: f.nutrients.fiber || 0,
+              sugar: f.nutrients.sugar || 0
+            }
+          }
+        }));
+        
+        return res.json({
+          success: true,
+          foods: formatted,
+          source: 'openai'
+        });
+      }
+    } catch (err) {
+      console.error('❌ OpenAI Vision analysis error:', err.message || err);
+    }
+
+    // FALLBACK: Try FatSecret
+    console.log('Step 2: Falling back to FatSecret API...');
+    try {
+      const fatsecretResponse = await analyzeImage(cleanedImageBase64);
+      const formattedFoods = formatFoodResponse(fatsecretResponse);
+      
+      if (formattedFoods && formattedFoods.length > 0) {
+        console.log('✅ FatSecret analysis successful! Found', formattedFoods.length, 'foods');
+        return res.json({
+          success: true,
+          foods: formattedFoods,
+          source: 'fatsecret'
+        });
+      }
+    } catch (err) {
+      console.warn('⚠️ FatSecret analysis failed:', err.message || err);
+    }
+
+    // No automatic detection - return empty array
+    console.log('⚠️ No foods detected automatically.');
+    return res.json({
+      success: true,
+      foods: [],
+      source: 'none',
+      message: 'Could not detect foods in the image automatically.'
+    });
+  } catch (error) {
+    console.error('Error analyzing image for food:', {
+      message: error.message,
+      stack: error.stack
+    });
+    res.status(500).json({
+      error: error.message || 'Failed to analyze food image',
+      details: error.response?.data || null
+    });
+  }
+};
+
 module.exports = {
   searchFood,
   getFoodDetails,
@@ -332,5 +431,6 @@ module.exports = {
   getDailySummary,
   deleteMeal,
   updateMeal,
-  getNutrientTrends
+  getNutrientTrends,
+  analyzeImageForFood
 };

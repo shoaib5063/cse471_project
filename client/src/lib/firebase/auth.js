@@ -45,6 +45,35 @@ export const logoutUser = async () => {
   }
 };
 
+export const verifyAdminCredentials = async (email, password) => {
+  try {
+    // First check if it's a valid admin email/password combination
+    const response = await fetch('/api/auth/admin-login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      // Store admin session info
+      localStorage.setItem('adminSession', JSON.stringify({
+        email: data.admin.email,
+        role: 'admin',
+        timestamp: Date.now()
+      }));
+      return { success: true, admin: data.admin };
+    } else {
+      return { success: false, error: data.error || 'Invalid admin credentials' };
+    }
+  } catch (error) {
+    return { success: false, error: 'Failed to verify admin credentials' };
+  }
+};
+
 export const resetPassword = async (email) => {
   try {
     await sendPasswordResetEmail(auth, email);

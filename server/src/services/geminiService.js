@@ -3,8 +3,6 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 // Access your API key as an environment variable
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
-
 const SYSTEM_PROMPT = `
 You are a helpful, knowledgeable, and empathetic AI Health Assistant for the MindfulMeals application.
 Your goal is to assist users with nutrition, healthy eating habits, meal planning, and general wellness.
@@ -20,28 +18,30 @@ Your goal is to assist users with nutrition, healthy eating habits, meal plannin
 If you don't know the answer, admit it and suggest where they might find the information.
     `;
 
+const model = genAI.getGenerativeModel({
+    model: "gemini-2.5-flash",
+    systemInstruction: SYSTEM_PROMPT
+});
+
 const generateResponse = async (userMessage, history = []) => {
     try {
+        // Filter history: Gemini requires history to start with 'user' and alternate.
+        // Remove any leading 'bot' messages from history.
+        let filteredHistory = [...history];
+        while (filteredHistory.length > 0 && filteredHistory[0].role === 'bot') {
+            filteredHistory.shift();
+        }
+
         // Construct the chat history for the model
         // Note: Gemini history format is { role: "user" | "model", parts: [{ text: "..." }] }
-        const chatHistory = history.map(msg => ({
+        const chatHistory = filteredHistory.map(msg => ({
             role: msg.role === 'bot' ? 'model' : 'user',
             parts: [{ text: msg.text }]
         }));
 
         // Start a chat session
         const chat = model.startChat({
-            history: [
-                {
-                    role: "user",
-                    parts: [{ text: SYSTEM_PROMPT }]
-                },
-                {
-                    role: "model",
-                    parts: [{ text: "Understood. I am ready to act as the MindfulMeals Health Assistant." }]
-                },
-                ...chatHistory
-            ],
+            history: chatHistory,
             generationConfig: {
                 maxOutputTokens: 500,
             },
