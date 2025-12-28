@@ -58,6 +58,12 @@ const generateResponse = async (userMessage, history = []) => {
         if (error.response) {
             console.error("Gemini API Error Response:", JSON.stringify(error.response, null, 2));
         }
+
+        // Handle rate limit errors specifically
+        if (error.status === 429) {
+            throw new Error("RATE_LIMIT: Our AI assistant is currently experiencing high demand. Please try again in a few minutes.");
+        }
+
         throw new Error("Failed to generate response from AI.");
     }
 };

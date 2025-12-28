@@ -27,6 +27,16 @@ router.post('/message', async (req, res) => {
     } catch (error) {
         console.error('Chatbot error:', error.message);
         console.error('Full error details:', error);
+
+        // Handle rate limit errors
+        if (error.message && error.message.startsWith('RATE_LIMIT:')) {
+            return res.status(429).json({
+                error: 'Rate limit exceeded',
+                details: error.message.replace('RATE_LIMIT: ', ''),
+                botResponse: "I'm sorry, but I'm currently experiencing high demand. Please try again in a few minutes. In the meantime, feel free to explore the other features of MindfulMeals!",
+            });
+        }
+
         res.status(500).json({
             error: 'Failed to get response from chatbot',
             details: error.message,
