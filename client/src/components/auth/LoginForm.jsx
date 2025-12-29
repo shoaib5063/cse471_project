@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { loginUser, loginWithGoogle, verifyAdminCredentials } from '../../lib/firebase/auth';
+import { createUserProfile, getUserProfile } from '../../lib/firebase/userProfile';
 
 export default function LoginForm({ onSuccess, isAdmin = false }) {
   const [email, setEmail] = useState('');
@@ -27,7 +28,7 @@ export default function LoginForm({ onSuccess, isAdmin = false }) {
         setError(result.error);
       }
     }
-    
+
     setLoading(false);
   };
 
@@ -36,13 +37,30 @@ export default function LoginForm({ onSuccess, isAdmin = false }) {
     setLoading(true);
 
     const result = await loginWithGoogle();
-    
+
     if (result.success) {
+      // Check if user profile exists
+      try {
+        const existingProfile = await getUserProfile(result.user.uid);
+
+        // If new user or profile missing, create it
+        if (!existingProfile || result.isNewUser) {
+          console.log('User profile missing for Google login, creating one...');
+          await createUserProfile(result.user.uid, {
+            email: result.user.email,
+            name: result.user.displayName || 'User',
+            role: 'user',
+          });
+        }
+      } catch (err) {
+        console.error('Error ensuring user profile:', err);
+      }
+
       onSuccess();
     } else {
       setError(result.error);
     }
-    
+
     setLoading(false);
   };
 
