@@ -40,8 +40,10 @@ export const createUserProfile = async (userId, profileData) => {
 
   // 2. Sync with Backend (MongoDB)
   try {
-    console.log('Attempting to sync with MongoDB...');
-    await fetch(`${import.meta.env.VITE_API_URL}/api/users`, {
+    const API_URL = import.meta.env.VITE_API_URL || '';
+    console.log(`Attempting to sync with MongoDB at ${API_URL}/api/users...`);
+
+    const response = await fetch(`${API_URL}/api/users`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -52,13 +54,17 @@ export const createUserProfile = async (userId, profileData) => {
         name: profileData.name
       }),
     });
-    console.log('Successfully synced with MongoDB');
-    mongoSuccess = true;
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('MongoDB sync failed with status:', response.status, errorText);
+    } else {
+      console.log('Successfully synced with MongoDB');
+      mongoSuccess = true;
+    }
   } catch (error) {
     console.error('Error syncing with MongoDB:', error);
-    // We don't fail the whole process if backend sync fails, 
-    // but we might want to alert the user or log it.
-    // For now, we proceed since Firestore is the primary source of truth for the client.
+    // We don't fail the whole process if backend sync fails
   }
 
   return { success: true, firestore: firestoreSuccess, mongo: mongoSuccess };
