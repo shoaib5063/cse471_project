@@ -5,11 +5,11 @@ export default function ChallengeUploadForm({ onClose, onSuccess }) {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    type: 'fitness',
+    type: 'streak', // Matches backend enum default
     duration: '',
-    difficulty: 'beginner',
-    targetGoal: '',
-    points: '',
+    difficulty: 'medium', // Matches backend enum default
+    targetValue: '', // Changed from targetGoal
+    xpReward: '',   // Changed from points
     startDate: '',
     endDate: '',
     requirements: [''],
@@ -44,13 +44,18 @@ export default function ChallengeUploadForm({ onClose, onSuccess }) {
 
     try {
       const challengeData = {
-        ...formData,
-        duration: parseInt(formData.duration) || 7,
-        points: parseInt(formData.points) || 100,
-        targetGoal: parseInt(formData.targetGoal) || 1,
-        requirements: formData.requirements.filter(req => req.trim() !== ''),
+        title: formData.title,
+        description: formData.description,
+        type: formData.type,
+        difficulty: formData.difficulty,
+        durationDays: parseInt(formData.duration) || 7, // Backend expects durationDays
+        xpReward: parseInt(formData.xpReward) || 100,
+        targetValue: parseInt(formData.targetValue) || 1,
+        // requirements: formData.requirements.filter(req => req.trim() !== ''), // Not in schema, ignoring
         startDate: new Date(formData.startDate),
-        endDate: new Date(formData.endDate)
+        endDate: new Date(formData.endDate),
+        unit: 'units', // Default unit since form doesn't have it
+        comparisonOperator: 'gte' // Default
       };
 
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/challenges`, {
@@ -136,12 +141,12 @@ export default function ChallengeUploadForm({ onClose, onSuccess }) {
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-green-500 focus:border-green-500"
               >
-                <option value="fitness">Fitness</option>
-                <option value="nutrition">Nutrition</option>
-                <option value="wellness">Wellness</option>
-                <option value="hydration">Hydration</option>
-                <option value="sleep">Sleep</option>
-                <option value="mindfulness">Mindfulness</option>
+                <option value="streak">Daily Streak</option>
+                <option value="calorie_limit">Calorie Limit</option>
+                <option value="healthy_meal_count">Healthy Meal Count</option>
+                <option value="protein_goal">Protein Goal</option>
+                <option value="hydration_goal">Hydration Goal</option>
+                <option value="custom">Custom</option>
               </select>
             </div>
             <div>
@@ -154,10 +159,9 @@ export default function ChallengeUploadForm({ onClose, onSuccess }) {
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-green-500 focus:border-green-500"
               >
-                <option value="beginner">Beginner</option>
-                <option value="intermediate">Intermediate</option>
-                <option value="advanced">Advanced</option>
-                <option value="expert">Expert</option>
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
               </select>
             </div>
           </div>
@@ -182,8 +186,8 @@ export default function ChallengeUploadForm({ onClose, onSuccess }) {
               </label>
               <input
                 type="number"
-                name="targetGoal"
-                value={formData.targetGoal}
+                name="targetValue"
+                value={formData.targetValue}
                 onChange={handleChange}
                 min="1"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-green-500 focus:border-green-500"
@@ -191,12 +195,12 @@ export default function ChallengeUploadForm({ onClose, onSuccess }) {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Points Reward
+                XP Reward
               </label>
               <input
                 type="number"
-                name="points"
-                value={formData.points}
+                name="xpReward"
+                value={formData.xpReward}
                 onChange={handleChange}
                 min="0"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-green-500 focus:border-green-500"

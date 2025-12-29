@@ -57,7 +57,44 @@ const updateUserProfile = async (req, res) => {
     }
 };
 
+// Create new user
+const createUser = async (req, res) => {
+    try {
+        const { firebaseUid, email, name } = req.body;
+
+        if (!firebaseUid || !email) {
+            return res.status(400).json({ error: 'Missing required fields' });
+        }
+
+        let user = await User.findOne({ firebaseUid });
+
+        if (user) {
+            return res.status(400).json({ error: 'User already exists' });
+        }
+
+        user = new User({
+            firebaseUid,
+            email,
+            name,
+            role: 'user', // Default role
+            status: 'active'
+        });
+
+        await user.save();
+
+        res.status(201).json({
+            success: true,
+            data: user,
+            message: 'User created successfully'
+        });
+    } catch (error) {
+        console.error('Error creating user:', error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
 module.exports = {
     getUserProfile,
-    updateUserProfile
+    updateUserProfile,
+    createUser
 };

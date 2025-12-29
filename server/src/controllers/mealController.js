@@ -97,10 +97,10 @@ const getFoodDetails = async (req, res) => {
 const logMeal = async (req, res) => {
   try {
     const { userId, mealName, mealType, foodItems, nutrition, date, moodBefore, moodAfter, moodNotes } = req.body;
-    
+
     console.log('📝 Logging meal:', { mealName, mealType });
     console.log('😊 Mood data received:', { moodBefore, moodAfter, moodNotes });
-    
+
     if (!userId || !mealName || !mealType) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
@@ -118,7 +118,7 @@ const logMeal = async (req, res) => {
     });
 
     console.log('💾 Saving meal with mood:', meal);
-    
+
     await meal.save();
     res.status(201).json({ message: 'Meal logged successfully', meal });
   } catch (error) {
@@ -292,7 +292,7 @@ const getNutrientTrends = async (req, res) => {
 
     // Group by date
     const dailyStats = {};
-    
+
     // Initialize all days in range to 0
     const tempDate = new Date(startDate);
     while (tempDate <= endDate) {
@@ -328,7 +328,7 @@ const getNutrientTrends = async (req, res) => {
   }
 };
 
-// Analyze food image using Gemini Vision + USDA API
+// Analyze food image using OpenAI Vision (Primary) + FatSecret (Fallback)
 const analyzeImageForFood = async (req, res) => {
   try {
     const { imageBase64 } = req.body;
@@ -347,10 +347,10 @@ const analyzeImageForFood = async (req, res) => {
     console.log('Step 1: Using OpenAI Vision API for image analysis...');
     try {
       const foods = await analyzeMealWithOpenAI(cleanedImageBase64);
-      
+
       if (foods && foods.length > 0) {
         console.log('✅ OpenAI Vision analysis successful! Found', foods.length, 'foods');
-        
+
         // Format foods for frontend consumption
         const formatted = foods.map(f => ({
           fdcId: f.fdcId,
@@ -374,7 +374,7 @@ const analyzeImageForFood = async (req, res) => {
             }
           }
         }));
-        
+
         return res.json({
           success: true,
           foods: formatted,
@@ -390,7 +390,7 @@ const analyzeImageForFood = async (req, res) => {
     try {
       const fatsecretResponse = await analyzeImage(cleanedImageBase64);
       const formattedFoods = formatFoodResponse(fatsecretResponse);
-      
+
       if (formattedFoods && formattedFoods.length > 0) {
         console.log('✅ FatSecret analysis successful! Found', formattedFoods.length, 'foods');
         return res.json({

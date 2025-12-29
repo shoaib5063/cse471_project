@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { getUserProfile, updateUserProfile } = require('../controllers/userController');
+const { getUserProfile, updateUserProfile, createUser } = require('../controllers/userController');
+
+// Create new user (Sync with Firebase)
+router.post('/', createUser);
 
 // Get user profile
 router.get('/:userId', getUserProfile);
