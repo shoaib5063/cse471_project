@@ -3,11 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
-import { 
-  Utensils, 
-  Plus, 
-  Edit2, 
-  ShoppingCart, 
+import {
+  Utensils,
+  Plus,
+  Edit2,
+  ShoppingCart,
   Save,
   X,
   CheckCircle,
@@ -24,7 +24,7 @@ export default function MealPlansPage() {
   const navigate = useNavigate();
   const [dietPreference, setDietPreference] = useState('vegetarian');
   const [calorieTarget, setCalorieTarget] = useState('');
-  const [planDuration, setPlanDuration] = useState(7);
+  const [planDuration, setPlanDuration] = useState(3);
   const [mealPlan, setMealPlan] = useState([]);
   const [showMealSelector, setShowMealSelector] = useState(false);
   const [activeDay, setActiveDay] = useState(null);
@@ -50,10 +50,10 @@ export default function MealPlansPage() {
   const generateMealPlan = async () => {
     setIsGenerating(true);
     setError(null);
-    
+
     try {
       const target = parseInt(calorieTarget, 10) || calculateCalorieGoal(userProfile);
-      
+
       if (!target || target < 1200) {
         throw new Error('Please enter a valid calorie target (minimum 1200 calories)');
       }
@@ -101,16 +101,16 @@ export default function MealPlansPage() {
   const replaceMeal = (dayIndex, mealType, newMeal) => {
     const updatedPlan = [...mealPlan];
     const target = parseInt(calorieTarget, 10) || calculateCalorieGoal(userProfile);
-    
+
     const caloriesPerMeal = {
       breakfast: Math.round(target * 0.25),
       lunch: Math.round(target * 0.35),
       dinner: Math.round(target * 0.30),
       snack: Math.round(target * 0.10),
     };
-    
+
     const targetCalories = caloriesPerMeal[mealType];
-    
+
     // Scale meal to match target
     if (newMeal.calories > 0) {
       const scale = targetCalories / newMeal.calories;
@@ -119,7 +119,7 @@ export default function MealPlansPage() {
       newMeal.carbs = Math.round(newMeal.carbs * scale);
       newMeal.fats = Math.round(newMeal.fats * scale);
     }
-    
+
     updatedPlan[dayIndex].meals[mealType] = newMeal;
     setMealPlan(updatedPlan);
     setShowMealSelector(false);
@@ -128,7 +128,7 @@ export default function MealPlansPage() {
 
   const generateShoppingList = () => {
     const ingredients = new Map();
-    
+
     mealPlan.forEach(day => {
       Object.values(day.meals).forEach(meal => {
         if (meal?.ingredients) {
@@ -144,7 +144,7 @@ export default function MealPlansPage() {
       .map(([ingredient, count]) => ({ ingredient, count }))
       .sort((a, b) => a.ingredient.localeCompare(b.ingredient));
   };
-  
+
   useEffect(() => {
     const run = async () => {
       if (mealPlan.length === 0) {
@@ -163,7 +163,7 @@ export default function MealPlansPage() {
 
   const getWeeklyNutrition = () => {
     const totals = { calories: 0, protein: 0, carbs: 0, fats: 0 };
-    
+
     mealPlan.forEach(day => {
       Object.values(day.meals).forEach(meal => {
         if (meal) {
@@ -202,7 +202,7 @@ export default function MealPlansPage() {
       const saved = JSON.parse(localStorage.getItem('savedMealPlans') || '[]');
       saved.push({ ...planData, id: Date.now().toString() });
       localStorage.setItem('savedMealPlans', JSON.stringify(saved));
-      
+
       alert('Meal plan saved successfully!');
     } catch (error) {
       console.error('Error saving meal plan:', error);
@@ -299,9 +299,9 @@ export default function MealPlansPage() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 disabled={isGenerating}
               >
+                <option value="1">1 Day</option>
+                <option value="2">2 Days</option>
                 <option value="3">3 Days</option>
-                <option value="7">7 Days (Weekly)</option>
-                <option value="14">14 Days</option>
               </select>
             </div>
             <div className="flex items-end">
@@ -432,8 +432,8 @@ export default function MealPlansPage() {
                           {meal ? (
                             <>
                               {meal.image && (
-                                <img 
-                                  src={meal.image} 
+                                <img
+                                  src={meal.image}
                                   alt={meal.name}
                                   className="w-full h-24 object-cover rounded mb-2"
                                 />
@@ -495,8 +495,8 @@ export default function MealPlansPage() {
                         className="border border-gray-200 rounded-lg p-3 hover:border-green-500 hover:bg-green-50 cursor-pointer transition-colors"
                       >
                         {meal.image && (
-                          <img 
-                            src={meal.image} 
+                          <img
+                            src={meal.image}
                             alt={meal.name}
                             className="w-full h-32 object-cover rounded mb-2"
                           />

@@ -47,7 +47,8 @@ export default function MealTrackingPage() {
 
   const fetchMeals = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/meals/user/${user.uid}`);
+      const API_URL = import.meta.env.VITE_API_URL || '';
+      const response = await axios.get(`${API_URL}/api/meals/user/${user.uid}`);
       // Sort by date descending
       const sortedMeals = (response.data || []).sort((a, b) => new Date(b.date) - new Date(a.date));
       setMeals(sortedMeals);
@@ -64,8 +65,9 @@ export default function MealTrackingPage() {
 
     setSearching(true);
     try {
+      const API_URL = import.meta.env.VITE_API_URL || '';
       const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/meals/search?query=${query}`
+        `${API_URL}/api/meals/search?query=${query}`
       );
       setSearchResults(response.data || []);
     } catch (error) {
@@ -174,7 +176,8 @@ export default function MealTrackingPage() {
   const handleAddMeal = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL}/api/meals`, {
+      const API_URL = import.meta.env.VITE_API_URL || '';
+      await axios.post(`${API_URL}/api/meals`, {
         userId: user.uid,
         mealName: newMeal.mealName,
         mealType: newMeal.mealType,
@@ -348,7 +351,7 @@ export default function MealTrackingPage() {
                           or search database below
                         </div>
                       </div>
-                      
+
                       <div className="relative">
                         <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                         <input
@@ -392,7 +395,7 @@ export default function MealTrackingPage() {
                   {/* Image Food Analyzer */}
                   {showImageAnalyzer && (
                     <div className="border-t border-gray-200 pt-6">
-                      <ImageFoodAnalyzer 
+                      <ImageFoodAnalyzer
                         onFoodsDetected={handleFoodsFromImage}
                         onClose={() => setShowImageAnalyzer(false)}
                       />

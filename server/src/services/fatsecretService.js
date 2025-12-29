@@ -8,7 +8,7 @@ const FATSECRET_API_URL = 'https://platform.fatsecret.com/rest/image-recognition
 const getAccessToken = async () => {
   try {
     const response = await axios.post('https://oauth.fatsecret.com/connect/token',
-      'grant_type=client_credentials&scope=image-recognition',
+      'grant_type=client_credentials&scope=basic',
       {
         auth: {
           username: FATSECRET_CLIENT_ID,

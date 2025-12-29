@@ -58,8 +58,9 @@ export default function ImageFoodAnalyzer({ onFoodsDetected, onClose }) {
           const imageBase64 = e.target.result;
 
           // Call backend API
+          const API_URL = import.meta.env.VITE_API_URL || '';
           const response = await axios.post(
-            `${import.meta.env.VITE_API_URL}/api/meals/analyze-image`,
+            `${API_URL}/api/meals/analyze-image`,
             { imageBase64 }
           );
 
@@ -152,7 +153,8 @@ export default function ImageFoodAnalyzer({ onFoodsDetected, onClose }) {
     setLoading(true);
     setError(null);
     try {
-      const resp = await axios.get(`${import.meta.env.VITE_API_URL}/api/meals/search`, { params: { query } });
+      const API_URL = import.meta.env.VITE_API_URL || '';
+      const resp = await axios.get(`${API_URL}/api/meals/search`, { params: { query } });
       setSearchResults(resp.data || []);
     } catch (err) {
       setError(err.response?.data?.error || 'Search failed');
@@ -347,11 +349,10 @@ export default function ImageFoodAnalyzer({ onFoodsDetected, onClose }) {
                   <div
                     key={index}
                     onClick={() => toggleFoodSelection(index)}
-                    className={`bg-gray-50 border-2 rounded-lg p-4 cursor-pointer transition-all ${
-                      selectedFoodIndices.has(index)
-                        ? 'border-green-500 bg-green-50'
-                        : 'border-gray-200 hover:border-green-300'
-                    }`}
+                    className={`bg-gray-50 border-2 rounded-lg p-4 cursor-pointer transition-all ${selectedFoodIndices.has(index)
+                      ? 'border-green-500 bg-green-50'
+                      : 'border-gray-200 hover:border-green-300'
+                      }`}
                   >
                     <div className="flex items-start gap-3">
                       <input
