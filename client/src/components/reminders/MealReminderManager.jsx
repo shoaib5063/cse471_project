@@ -34,11 +34,19 @@ export default function MealReminderManager({ userId, userEmail }) {
 
     try {
       setLoading(true);
+      const API_URL = import.meta.env.VITE_API_URL || '';
       console.log(`Fetching reminders for user: ${userId}`);
       const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/reminders/user/${userId}`
+        `${API_URL}/api/reminders/user/${userId}`
       );
-      setReminders(response.data);
+
+      if (Array.isArray(response.data)) {
+        setReminders(response.data);
+      } else {
+        console.error('Unexpected response format:', response.data);
+        setReminders([]);
+        setError('Received invalid data from server');
+      }
       setError('');
     } catch (err) {
       console.error('Error fetching reminders:', err);
@@ -58,7 +66,8 @@ export default function MealReminderManager({ userId, userEmail }) {
     }
 
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL}/api/reminders`, {
+      const API_URL = import.meta.env.VITE_API_URL || '';
+      await axios.post(`${API_URL}/api/reminders`, {
         userId,
         mealType: formData.mealType,
         reminderTime: formData.reminderTime,
@@ -86,8 +95,9 @@ export default function MealReminderManager({ userId, userEmail }) {
     if (!window.confirm('Are you sure you want to delete this reminder?')) return;
 
     try {
+      const API_URL = import.meta.env.VITE_API_URL || '';
       await axios.delete(
-        `${import.meta.env.VITE_API_URL}/api/reminders/${reminderId}`
+        `${API_URL}/api/reminders/${reminderId}`
       );
       setSuccess('Reminder deleted');
       fetchReminders();
@@ -99,8 +109,9 @@ export default function MealReminderManager({ userId, userEmail }) {
 
   const handleToggleReminder = async (reminder) => {
     try {
+      const API_URL = import.meta.env.VITE_API_URL || '';
       await axios.patch(
-        `${import.meta.env.VITE_API_URL}/api/reminders/${reminder._id}/toggle`
+        `${API_URL}/api/reminders/${reminder._id}/toggle`
       );
       fetchReminders();
     } catch (err) {
@@ -110,7 +121,8 @@ export default function MealReminderManager({ userId, userEmail }) {
 
   const handleUpdateTime = async (reminderId, newTime) => {
     try {
-      await axios.put(`${import.meta.env.VITE_API_URL}/api/reminders/${reminderId}`, {
+      const API_URL = import.meta.env.VITE_API_URL || '';
+      await axios.put(`${API_URL}/api/reminders/${reminderId}`, {
         reminderTime: newTime,
       });
       fetchReminders();
