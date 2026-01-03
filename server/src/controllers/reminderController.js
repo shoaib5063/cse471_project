@@ -1,5 +1,6 @@
 const MealReminder = require('../models/MealReminder');
 const { sendMealReminderEmail } = require('../services/emailService');
+const { checkAndSendReminders } = require('../services/reminderScheduler');
 
 /**
  * Create a new meal reminder
@@ -148,6 +149,20 @@ const toggleReminder = async (req, res) => {
   }
 };
 
+/**
+ * Manually trigger the reminder check (for Cron jobs)
+ */
+const triggerRemindersCheck = async (req, res) => {
+  try {
+    console.log('🤖 Cron trigger received: checking reminders...');
+    await checkAndSendReminders();
+    res.json({ status: 'ok', message: 'Reminders check completed' });
+  } catch (error) {
+    console.error('Error triggering reminders check:', error);
+    res.status(500).json({ error: 'Failed to trigger check' });
+  }
+};
+
 module.exports = {
   createReminder,
   getUserReminders,
@@ -155,6 +170,7 @@ module.exports = {
   updateReminder,
   deleteReminder,
   toggleReminder,
+  triggerRemindersCheck,
   // Temporary test helper to trigger a send immediately
   testSendReminder,
 };
